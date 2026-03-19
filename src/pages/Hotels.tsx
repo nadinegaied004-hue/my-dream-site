@@ -3,28 +3,31 @@ import { Search } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const categories = [
-  "Hôtels", "Maisons", "Maisons d'hôtes", "Fermes", "Stades",
-  "Salles de fêtes", "Salles de conférence", "Foires",
-];
+const categories = ["Hôtels", "Maisons", "Maisons d'hôtes", "Fermes"];
 
-const mockHotels = [
-  { id: 1, nom: "Hôtel Royal Palace", adresse: "123 Av. Mohammed V", disponible: true, avis: 128 },
-  { id: 2, nom: "Riad Les Oliviers", adresse: "45 Rue des Roses", disponible: true, avis: 87 },
-  { id: 3, nom: "Maison d'hôtes Atlas", adresse: "12 Bd Hassan II", disponible: false, avis: 45 },
-  { id: 4, nom: "Ferme du Soleil", adresse: "Route de Ouarzazate", disponible: true, avis: 23 },
-  { id: 5, nom: "Résidence Marina", adresse: "Port de plaisance", disponible: true, avis: 156 },
-  { id: 6, nom: "Villa des Dunes", adresse: "Zone touristique", disponible: false, avis: 64 },
-  { id: 7, nom: "Le Grand Stade", adresse: "Complexe sportif", disponible: true, avis: 32 },
-  { id: 8, nom: "Palais des Fêtes", adresse: "Centre-ville", disponible: true, avis: 91 },
+const mockLogements = [
+  { id: 1, nom: "Hôtel Royal Palace", adresse: "123 Av. Mohammed V", disponible: true, avis: 128, categorie: "Hôtels" },
+  { id: 2, nom: "Hôtel Marrakech Inn", adresse: "45 Rue de Fès", disponible: true, avis: 95, categorie: "Hôtels" },
+  { id: 3, nom: "Hôtel Casablanca View", adresse: "Bd de la Corniche", disponible: false, avis: 210, categorie: "Hôtels" },
+  { id: 4, nom: "Maison du Jardin", adresse: "12 Rue des Fleurs", disponible: true, avis: 34, categorie: "Maisons" },
+  { id: 5, nom: "Résidence Marina", adresse: "Port de plaisance", disponible: true, avis: 156, categorie: "Maisons" },
+  { id: 6, nom: "Villa des Dunes", adresse: "Zone touristique", disponible: false, avis: 64, categorie: "Maisons" },
+  { id: 7, nom: "Riad Les Oliviers", adresse: "45 Rue des Roses", disponible: true, avis: 87, categorie: "Maisons d'hôtes" },
+  { id: 8, nom: "Maison d'hôtes Atlas", adresse: "12 Bd Hassan II", disponible: false, avis: 45, categorie: "Maisons d'hôtes" },
+  { id: 9, nom: "Dar Essalam", adresse: "Médina ancienne", disponible: true, avis: 72, categorie: "Maisons d'hôtes" },
+  { id: 10, nom: "Ferme du Soleil", adresse: "Route de Ouarzazate", disponible: true, avis: 23, categorie: "Fermes" },
+  { id: 11, nom: "Ferme Bio Atlas", adresse: "Vallée de l'Ourika", disponible: true, avis: 18, categorie: "Fermes" },
+  { id: 12, nom: "Domaine des Oliviers", adresse: "Route de Meknès", disponible: false, avis: 41, categorie: "Fermes" },
 ];
 
 const Hotels = () => {
   const [selectedCategory, setSelectedCategory] = useState("Hôtels");
   const [search, setSearch] = useState("");
 
-  const filtered = mockHotels.filter((h) =>
-    h.nom.toLowerCase().includes(search.toLowerCase())
+  const filtered = mockLogements.filter(
+    (h) =>
+      h.categorie === selectedCategory &&
+      h.nom.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
