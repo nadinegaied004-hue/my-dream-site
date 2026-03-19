@@ -24,8 +24,10 @@ const Hotels = () => {
   const [selectedCategory, setSelectedCategory] = useState("Hôtels");
   const [search, setSearch] = useState("");
 
-  const filtered = mockHotels.filter((h) =>
-    h.nom.toLowerCase().includes(search.toLowerCase())
+  const filtered = mockLogements.filter(
+    (h) =>
+      h.categorie === selectedCategory &&
+      h.nom.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
