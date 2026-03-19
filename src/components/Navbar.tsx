@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Globe, Moon, Sun } from "lucide-react";
+import { Menu, X, Globe, Moon, Sun, Home } from "lucide-react";
 
 const navItems = [
   { label: "Accueil", path: "/" },
