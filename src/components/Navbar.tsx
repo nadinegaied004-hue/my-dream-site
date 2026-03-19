@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Globe, Moon, Sun } from "lucide-react";
+import { Menu, X, Globe, Moon, Sun, Home } from "lucide-react";
 
 const navItems = [
   { label: "Accueil", path: "/" },
@@ -22,6 +22,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2">
+          <Home className="text-primary" size={26} />
           <span className="text-2xl font-display font-bold text-primary">StayEase</span>
         </Link>
 
