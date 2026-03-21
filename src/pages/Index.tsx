@@ -31,8 +31,8 @@ const Index = () => (
           <Link to="/hotels" className="btn-primary text-lg">
             Explorer les logements
           </Link>
-          <Link to="/inscription" className="btn-outline border-hotel-cream text-hotel-cream hover:bg-hotel-cream hover:text-hotel-dark text-lg">
-            Créer un compte
+          <Link to="/connexion" className="btn-outline border-hotel-cream text-hotel-cream hover:bg-hotel-cream hover:text-hotel-dark text-lg">
+            Se connecter
           </Link>
         </div>
       </div>
