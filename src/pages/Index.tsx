@@ -92,7 +92,7 @@ const Index = () => (
         <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
           Créez votre compte gratuitement et accédez à des fonctionnalités exclusives
         </p>
-        <Link to="/inscription" className="inline-block px-8 py-4 bg-background text-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity text-lg">
+        <Link to="/connexion" className="inline-block px-8 py-4 bg-background text-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity text-lg">
           Commencer maintenant
         </Link>
       </div>
