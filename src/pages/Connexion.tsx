@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -38,12 +38,7 @@ const Connexion = () => {
             <button type="submit" className="btn-primary w-full mt-2">Se connecter</button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Pas encore de compte ?{" "}
-            <Link to="/inscription" className="text-primary font-semibold hover:underline">
-              Créer un compte
-            </Link>
-          </p>
+          
         </div>
       </main>
       <Footer />
