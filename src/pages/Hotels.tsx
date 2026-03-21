@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Search, Filter, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, Filter, ChevronDown, ChevronRight, CalendarDays } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -28,18 +30,114 @@ const attractionsProximite = [
 type FilterMode = "categorie" | "evenement" | "saison" | "attraction";
 
 const mockLogements = [
-  { id: 1, nom: "Hôtel Royal Palace", adresse: "123 Av. Mohammed V", disponible: true, avis: 128, categorie: "Hôtels", evenements: ["Festival", "Concert"], saison: "Été", attractions: ["Stade de football", "Salle de conférences"] },
-  { id: 2, nom: "Hôtel Marrakech Inn", adresse: "45 Rue de Fès", disponible: true, avis: 95, categorie: "Hôtels", evenements: ["Exposition", "Théâtre"], saison: "Printemps", attractions: ["Salle des fêtes", "Parc / Jardin"] },
-  { id: 3, nom: "Hôtel Casablanca View", adresse: "Bd de la Corniche", disponible: false, avis: 210, categorie: "Hôtels", evenements: ["Football", "Tennis"], saison: "Été", attractions: ["Stade de football", "Centre commercial"] },
-  { id: 4, nom: "Maison du Jardin", adresse: "12 Rue des Fleurs", disponible: true, avis: 34, categorie: "Maisons", evenements: ["Parc d'attractions", "Zoo"], saison: "Printemps", attractions: ["Parc / Jardin", "Foire / Exposition"] },
-  { id: 5, nom: "Résidence Marina", adresse: "Port de plaisance", disponible: true, avis: 156, categorie: "Maisons", evenements: ["Concert", "Festival"], saison: "Été", attractions: ["Centre commercial", "Salle des fêtes"] },
-  { id: 6, nom: "Villa des Dunes", adresse: "Zone touristique", disponible: false, avis: 64, categorie: "Maisons", evenements: ["Volleyball", "Padel"], saison: "Été", attractions: ["Terrain de padel", "Terrain de volleyball"] },
-  { id: 7, nom: "Riad Les Oliviers", adresse: "45 Rue des Roses", disponible: true, avis: 87, categorie: "Maisons d'hôtes", evenements: ["Exposition", "Musée"], saison: "Automne", attractions: ["Salle de conférences", "Parc / Jardin"] },
-  { id: 8, nom: "Maison d'hôtes Atlas", adresse: "12 Bd Hassan II", disponible: false, avis: 45, categorie: "Maisons d'hôtes", evenements: ["Basketball", "Football"], saison: "Hiver", attractions: ["Salle de basketball", "Stade de football"] },
-  { id: 9, nom: "Dar Essalam", adresse: "Médina ancienne", disponible: true, avis: 72, categorie: "Maisons d'hôtes", evenements: ["Festival", "Théâtre"], saison: "Printemps", attractions: ["Salle des fêtes", "Foire / Exposition"] },
-  { id: 10, nom: "Ferme du Soleil", adresse: "Route de Ouarzazate", disponible: true, avis: 23, categorie: "Fermes", evenements: ["Zoo", "Parc d'attractions"], saison: "Été", attractions: ["Parc / Jardin", "Foire / Exposition"] },
-  { id: 11, nom: "Ferme Bio Atlas", adresse: "Vallée de l'Ourika", disponible: true, avis: 18, categorie: "Fermes", evenements: ["Exposition", "Concert"], saison: "Automne", attractions: ["Centre commercial", "Parc / Jardin"] },
-  { id: 12, nom: "Domaine des Oliviers", adresse: "Route de Meknès", disponible: false, avis: 41, categorie: "Fermes", evenements: ["Festival", "Aquarium"], saison: "Hiver", attractions: ["Salle de conférences", "Salle des fêtes"] },
+  {
+    id: 1, nom: "Hôtel Royal Palace", lat: 33.5731, lng: -7.5898, proprietaire: "Ahmed Benjelloun",
+    datesDisponibles: [new Date(2026, 3, 5), new Date(2026, 3, 10), new Date(2026, 3, 15), new Date(2026, 4, 1), new Date(2026, 4, 12)],
+    datesEvenements: [new Date(2026, 3, 8), new Date(2026, 4, 20)],
+    avis: 128, categorie: "Hôtels",
+    evenements: [{ nom: "Festival", distance: 0.5 }, { nom: "Concert", distance: 1.2 }],
+    saison: "Été",
+    attractions: [{ nom: "Stade de football", distance: 0.3 }, { nom: "Salle de conférences", distance: 1.0 }],
+  },
+  {
+    id: 2, nom: "Hôtel Marrakech Inn", lat: 31.6295, lng: -7.9811, proprietaire: "Fatima Zahra",
+    datesDisponibles: [new Date(2026, 3, 2), new Date(2026, 3, 18), new Date(2026, 4, 5)],
+    datesEvenements: [new Date(2026, 3, 14)],
+    avis: 95, categorie: "Hôtels",
+    evenements: [{ nom: "Exposition", distance: 0.8 }, { nom: "Théâtre", distance: 2.0 }],
+    saison: "Printemps",
+    attractions: [{ nom: "Salle des fêtes", distance: 0.6 }, { nom: "Parc / Jardin", distance: 1.5 }],
+  },
+  {
+    id: 3, nom: "Hôtel Casablanca View", lat: 33.5950, lng: -7.6187, proprietaire: "Karim El Fassi",
+    datesDisponibles: [new Date(2026, 4, 3), new Date(2026, 4, 20)],
+    datesEvenements: [new Date(2026, 3, 25), new Date(2026, 4, 10)],
+    avis: 210, categorie: "Hôtels",
+    evenements: [{ nom: "Football", distance: 0.2 }, { nom: "Tennis", distance: 3.0 }],
+    saison: "Été",
+    attractions: [{ nom: "Stade de football", distance: 0.2 }, { nom: "Centre commercial", distance: 0.9 }],
+  },
+  {
+    id: 4, nom: "Maison du Jardin", lat: 34.0209, lng: -6.8416, proprietaire: "Nadia Berrada",
+    datesDisponibles: [new Date(2026, 3, 1), new Date(2026, 3, 7), new Date(2026, 3, 22), new Date(2026, 4, 8)],
+    datesEvenements: [new Date(2026, 3, 12)],
+    avis: 34, categorie: "Maisons",
+    evenements: [{ nom: "Parc d'attractions", distance: 1.0 }, { nom: "Zoo", distance: 2.5 }],
+    saison: "Printemps",
+    attractions: [{ nom: "Parc / Jardin", distance: 0.1 }, { nom: "Foire / Exposition", distance: 1.8 }],
+  },
+  {
+    id: 5, nom: "Résidence Marina", lat: 33.6065, lng: -7.6322, proprietaire: "Youssef Tazi",
+    datesDisponibles: [new Date(2026, 3, 4), new Date(2026, 3, 11), new Date(2026, 4, 2), new Date(2026, 4, 15)],
+    datesEvenements: [new Date(2026, 4, 5)],
+    avis: 156, categorie: "Maisons",
+    evenements: [{ nom: "Concert", distance: 0.7 }, { nom: "Festival", distance: 1.5 }],
+    saison: "Été",
+    attractions: [{ nom: "Centre commercial", distance: 0.4 }, { nom: "Salle des fêtes", distance: 1.2 }],
+  },
+  {
+    id: 6, nom: "Villa des Dunes", lat: 30.4278, lng: -9.5981, proprietaire: "Samira Alaoui",
+    datesDisponibles: [new Date(2026, 5, 1), new Date(2026, 5, 15)],
+    datesEvenements: [new Date(2026, 5, 10)],
+    avis: 64, categorie: "Maisons",
+    evenements: [{ nom: "Volleyball", distance: 0.3 }, { nom: "Padel", distance: 0.8 }],
+    saison: "Été",
+    attractions: [{ nom: "Terrain de padel", distance: 0.3 }, { nom: "Terrain de volleyball", distance: 0.5 }],
+  },
+  {
+    id: 7, nom: "Riad Les Oliviers", lat: 31.6340, lng: -8.0100, proprietaire: "Hassan Moussaoui",
+    datesDisponibles: [new Date(2026, 3, 3), new Date(2026, 3, 19), new Date(2026, 4, 7)],
+    datesEvenements: [new Date(2026, 3, 20)],
+    avis: 87, categorie: "Maisons d'hôtes",
+    evenements: [{ nom: "Exposition", distance: 0.4 }, { nom: "Musée", distance: 1.0 }],
+    saison: "Automne",
+    attractions: [{ nom: "Salle de conférences", distance: 0.7 }, { nom: "Parc / Jardin", distance: 0.3 }],
+  },
+  {
+    id: 8, nom: "Maison d'hôtes Atlas", lat: 34.0331, lng: -5.0003, proprietaire: "Amina Chraibi",
+    datesDisponibles: [new Date(2026, 4, 10), new Date(2026, 4, 25)],
+    datesEvenements: [new Date(2026, 4, 18)],
+    avis: 45, categorie: "Maisons d'hôtes",
+    evenements: [{ nom: "Basketball", distance: 0.6 }, { nom: "Football", distance: 1.5 }],
+    saison: "Hiver",
+    attractions: [{ nom: "Salle de basketball", distance: 0.6 }, { nom: "Stade de football", distance: 1.5 }],
+  },
+  {
+    id: 9, nom: "Dar Essalam", lat: 31.6300, lng: -7.9890, proprietaire: "Omar Kettani",
+    datesDisponibles: [new Date(2026, 3, 6), new Date(2026, 3, 14), new Date(2026, 3, 28), new Date(2026, 4, 9)],
+    datesEvenements: [new Date(2026, 3, 10), new Date(2026, 4, 1)],
+    avis: 72, categorie: "Maisons d'hôtes",
+    evenements: [{ nom: "Festival", distance: 0.9 }, { nom: "Théâtre", distance: 1.8 }],
+    saison: "Printemps",
+    attractions: [{ nom: "Salle des fêtes", distance: 0.5 }, { nom: "Foire / Exposition", distance: 2.0 }],
+  },
+  {
+    id: 10, nom: "Ferme du Soleil", lat: 30.9200, lng: -6.9000, proprietaire: "Rachid Benali",
+    datesDisponibles: [new Date(2026, 3, 8), new Date(2026, 3, 20), new Date(2026, 4, 4), new Date(2026, 4, 18)],
+    datesEvenements: [new Date(2026, 4, 12)],
+    avis: 23, categorie: "Fermes",
+    evenements: [{ nom: "Zoo", distance: 2.0 }, { nom: "Parc d'attractions", distance: 3.5 }],
+    saison: "Été",
+    attractions: [{ nom: "Parc / Jardin", distance: 0.2 }, { nom: "Foire / Exposition", distance: 4.0 }],
+  },
+  {
+    id: 11, nom: "Ferme Bio Atlas", lat: 31.3500, lng: -7.7300, proprietaire: "Leila Ouazzani",
+    datesDisponibles: [new Date(2026, 3, 9), new Date(2026, 3, 25), new Date(2026, 4, 6)],
+    datesEvenements: [new Date(2026, 3, 30)],
+    avis: 18, categorie: "Fermes",
+    evenements: [{ nom: "Exposition", distance: 1.5 }, { nom: "Concert", distance: 3.0 }],
+    saison: "Automne",
+    attractions: [{ nom: "Centre commercial", distance: 5.0 }, { nom: "Parc / Jardin", distance: 0.5 }],
+  },
+  {
+    id: 12, nom: "Domaine des Oliviers", lat: 33.8935, lng: -5.5473, proprietaire: "Mehdi Slaoui",
+    datesDisponibles: [new Date(2026, 5, 5), new Date(2026, 5, 20)],
+    datesEvenements: [new Date(2026, 5, 15)],
+    avis: 41, categorie: "Fermes",
+    evenements: [{ nom: "Festival", distance: 1.2 }, { nom: "Aquarium", distance: 4.0 }],
+    saison: "Hiver",
+    attractions: [{ nom: "Salle de conférences", distance: 2.0 }, { nom: "Salle des fêtes", distance: 3.0 }],
+  },
 ];
 
 const Hotels = () => {
@@ -54,9 +152,9 @@ const Hotels = () => {
   const filtered = mockLogements.filter((h) => {
     const matchSearch = h.nom.toLowerCase().includes(search.toLowerCase());
     if (filterMode === "categorie") return h.categorie === selectedCategory && matchSearch;
-    if (filterMode === "evenement" && selectedEvenement) return h.evenements.includes(selectedEvenement) && matchSearch;
+    if (filterMode === "evenement" && selectedEvenement) return h.evenements.some(e => e.nom === selectedEvenement) && matchSearch;
     if (filterMode === "saison" && selectedSaison) return h.saison === selectedSaison && matchSearch;
-    if (filterMode === "attraction" && selectedAttraction) return h.attractions.includes(selectedAttraction) && matchSearch;
+    if (filterMode === "attraction" && selectedAttraction) return h.attractions.some(a => a.nom === selectedAttraction) && matchSearch;
     return matchSearch;
   });
 
@@ -81,7 +179,6 @@ const Hotels = () => {
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Sidebar */}
         <aside className="w-full md:w-72 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
-          {/* Filter mode selector */}
           <div>
             <h3 className="font-display font-semibold text-lg mb-3 flex items-center gap-2">
               <Filter size={18} className="text-primary" />
@@ -105,7 +202,6 @@ const Hotels = () => {
           </div>
 
           <div className="border-t border-border pt-4">
-            {/* Category filter */}
             {filterMode === "categorie" && (
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Catégories</h4>
@@ -125,7 +221,6 @@ const Hotels = () => {
               </div>
             )}
 
-            {/* Event filter */}
             {filterMode === "evenement" && (
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Événements à proximité</h4>
@@ -160,7 +255,6 @@ const Hotels = () => {
               </div>
             )}
 
-            {/* Season filter */}
             {filterMode === "saison" && (
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Saisons</h4>
@@ -180,7 +274,6 @@ const Hotels = () => {
               </div>
             )}
 
-            {/* Attraction filter */}
             {filterMode === "attraction" && (
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Attractions à proximité</h4>
@@ -203,7 +296,7 @@ const Hotels = () => {
         </aside>
 
         {/* Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 overflow-x-auto">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <h2 className="section-title text-2xl">{getTitle()}</h2>
             <div className="relative">
@@ -219,39 +312,100 @@ const Hotels = () => {
           </div>
 
           <div className="overflow-x-auto rounded-lg border border-border">
-            <table className="hotel-table">
+            <table className="hotel-table w-full">
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>Nom</th>
-                  <th>Adresse</th>
-                  <th>Disponibilité</th>
+                  <th>Propriétaire</th>
+                  <th>Coordonnées (Lat, Lng)</th>
+                  <th>Calendrier</th>
+                  <th>Événements (dist.)</th>
+                  <th>Saison</th>
+                  <th>Attractions (dist.)</th>
                   <th>Nb. Avis</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center text-muted-foreground py-8">
+                    <td colSpan={8} className="text-center text-muted-foreground py-8">
                       Aucun logement trouvé pour ce filtre.
                     </td>
                   </tr>
                 ) : (
                   filtered.map((hotel) => (
                     <tr key={hotel.id}>
-                      <td className="font-mono text-muted-foreground">{hotel.id}</td>
-                      <td className="font-semibold">{hotel.nom}</td>
-                      <td className="text-muted-foreground">{hotel.adresse}</td>
-                      <td>
-                        <span
-                          className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                            hotel.disponible
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
+                      <td className="font-semibold whitespace-nowrap">{hotel.nom}</td>
+                      <td className="text-muted-foreground whitespace-nowrap">{hotel.proprietaire}</td>
+                      <td className="text-muted-foreground font-mono text-xs whitespace-nowrap">
+                        <a
+                          href={`https://www.google.com/maps?q=${hotel.lat},${hotel.lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline hover:text-primary/80"
                         >
-                          {hotel.disponible ? "Disponible" : "Indisponible"}
+                          {hotel.lat.toFixed(4)}, {hotel.lng.toFixed(4)}
+                        </a>
+                      </td>
+                      <td>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                              <CalendarDays size={14} />
+                              {hotel.datesDisponibles.length} dates
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <div className="p-2 text-xs space-y-1 border-b border-border">
+                              <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full bg-green-500 inline-block" />
+                                <span>Logement disponible</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full bg-orange-500 inline-block" />
+                                <span>Événement à proximité</span>
+                              </div>
+                            </div>
+                            <Calendar
+                              mode="multiple"
+                              selected={[...hotel.datesDisponibles, ...hotel.datesEvenements]}
+                              className="p-3 pointer-events-auto"
+                              modifiers={{
+                                disponible: hotel.datesDisponibles,
+                                evenement: hotel.datesEvenements,
+                              }}
+                              modifiersStyles={{
+                                disponible: { backgroundColor: "hsl(142 71% 45%)", color: "white", borderRadius: "9999px" },
+                                evenement: { backgroundColor: "hsl(25 95% 53%)", color: "white", borderRadius: "9999px" },
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </td>
+                      <td className="text-xs">
+                        <div className="space-y-0.5">
+                          {hotel.evenements.map((e) => (
+                            <div key={e.nom} className="whitespace-nowrap">
+                              <span className="font-medium text-foreground">{e.nom}</span>
+                              <span className="text-muted-foreground ml-1">({e.distance} km)</span>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td>
+                        <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-accent text-accent-foreground">
+                          {hotel.saison}
                         </span>
+                      </td>
+                      <td className="text-xs">
+                        <div className="space-y-0.5">
+                          {hotel.attractions.map((a) => (
+                            <div key={a.nom} className="whitespace-nowrap">
+                              <span className="font-medium text-foreground">{a.nom}</span>
+                              <span className="text-muted-foreground ml-1">({a.distance} km)</span>
+                            </div>
+                          ))}
+                        </div>
                       </td>
                       <td className="text-muted-foreground">{hotel.avis}</td>
                     </tr>
