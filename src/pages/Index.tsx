@@ -31,8 +31,8 @@ const Index = () => (
           <Link to="/hotels" className="btn-primary text-lg">
             Explorer les logements
           </Link>
-          <Link to="/inscription" className="btn-outline border-hotel-cream text-hotel-cream hover:bg-hotel-cream hover:text-hotel-dark text-lg">
-            Créer un compte
+          <Link to="/connexion" className="btn-outline border-hotel-cream text-hotel-cream hover:bg-hotel-cream hover:text-hotel-dark text-lg">
+            Se connecter
           </Link>
         </div>
       </div>
@@ -92,7 +92,7 @@ const Index = () => (
         <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
           Créez votre compte gratuitement et accédez à des fonctionnalités exclusives
         </p>
-        <Link to="/inscription" className="inline-block px-8 py-4 bg-background text-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity text-lg">
+        <Link to="/connexion" className="inline-block px-8 py-4 bg-background text-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity text-lg">
           Commencer maintenant
         </Link>
       </div>

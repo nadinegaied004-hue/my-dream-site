@@ -6,6 +6,9 @@ const navItems = [
   { label: "Accueil", path: "/" },
   { label: "Types de logement", path: "/hotels" },
   { label: "Avis Clients", path: "/avis" },
+  { label: "Avis Personnel", path: "/avis-personnel" },
+  { label: "Sombre/Clair", path: "#theme" },
+  { label: "Langues (3)", path: "#lang" },
 ];
 
 const Navbar = () => {
@@ -28,26 +31,40 @@ const Navbar = () => {
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`nav-link ${location.pathname === item.path ? "nav-link-active" : ""}`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            if (item.path === "#theme") {
+              return (
+                <button key="theme" onClick={toggleTheme} className="nav-link flex items-center gap-1">
+                  {isDark ? <Sun size={16} /> : <Moon size={16} />}
+                  Sombre/Clair
+                </button>
+              );
+            }
+            if (item.path === "#lang") {
+              return (
+                <button key="lang" className="nav-link flex items-center gap-1">
+                  <Globe size={16} />
+                  FR
+                </button>
+              );
+            }
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`nav-link ${location.pathname === item.path ? "nav-link-active" : ""}`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-muted transition-colors">
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-          <button className="p-2 rounded-lg hover:bg-muted transition-colors flex items-center gap-1 text-sm">
-            <Globe size={18} />
-            <span>FR</span>
-          </button>
-          <Link to="/connexion" className="btn-outline text-sm !py-2 !px-4">
+          <Link to="/proprietaire" className="btn-outline text-sm !py-2 !px-4">
+            Espace Propriétaire
+          </Link>
+          <Link to="/connexion" className="btn-primary text-sm !py-2 !px-4">
             Se connecter
           </Link>
         </div>
@@ -61,21 +78,31 @@ const Navbar = () => {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden bg-background border-b border-border px-4 pb-4 space-y-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`block nav-link ${location.pathname === item.path ? "nav-link-active" : ""}`}
-              onClick={() => setMobileOpen(false)}
-            >
-              {item.label}
+          {navItems.map((item) => {
+            if (item.path === "#theme") {
+              return (
+                <button key="theme" onClick={() => { toggleTheme(); setMobileOpen(false); }} className="block nav-link w-full text-left">
+                  {isDark ? "☀ Mode clair" : "🌙 Mode sombre"}
+                </button>
+              );
+            }
+            if (item.path === "#lang") return null;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`block nav-link ${location.pathname === item.path ? "nav-link-active" : ""}`}
+                onClick={() => setMobileOpen(false)}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+          <div className="flex flex-col gap-2 pt-2">
+            <Link to="/proprietaire" className="btn-outline text-sm !py-2 text-center" onClick={() => setMobileOpen(false)}>
+              Espace Propriétaire
             </Link>
-          ))}
-          <div className="flex items-center gap-3 pt-2">
-            <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-muted">
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            <Link to="/connexion" className="btn-primary text-sm !py-2" onClick={() => setMobileOpen(false)}>
+            <Link to="/connexion" className="btn-primary text-sm !py-2 text-center" onClick={() => setMobileOpen(false)}>
               Se connecter
             </Link>
           </div>

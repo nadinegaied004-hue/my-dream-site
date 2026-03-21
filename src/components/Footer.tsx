@@ -14,21 +14,25 @@ const Footer = () => (
         <ul className="space-y-2 text-sm text-hotel-cream/70">
           <li><Link to="/" className="hover:text-primary transition-colors">Emplois</Link></li>
           <li><Link to="/" className="hover:text-primary transition-colors">Partenaires</Link></li>
+          <li><Link to="/" className="hover:text-primary transition-colors">Publications</Link></li>
         </ul>
       </div>
       <div>
         <h4 className="font-semibold mb-3 text-primary">Liens utiles</h4>
         <ul className="space-y-2 text-sm text-hotel-cream/70">
           <li><Link to="/" className="hover:text-primary transition-colors">FAQ / Support</Link></li>
+          <li><Link to="/" className="hover:text-primary transition-colors">Sécurité</Link></li>
           <li><Link to="/" className="hover:text-primary transition-colors">Nous contacter</Link></li>
         </ul>
       </div>
       <div>
-        <h4 className="font-semibold mb-3 text-primary">Légal</h4>
+        <h4 className="font-semibold mb-3 text-primary">Conditions & Conformité</h4>
         <ul className="space-y-2 text-sm text-hotel-cream/70">
           <li><Link to="/" className="hover:text-primary transition-colors">Conditions d'utilisation</Link></li>
           <li><Link to="/" className="hover:text-primary transition-colors">Politique de confidentialité</Link></li>
+          <li><Link to="/" className="hover:text-primary transition-colors">Politique en matière de cookies</Link></li>
           <li><Link to="/" className="hover:text-primary transition-colors">Conformité</Link></li>
+          <li><Link to="/" className="hover:text-primary transition-colors">Configurer les cookies</Link></li>
         </ul>
       </div>
     </div>
