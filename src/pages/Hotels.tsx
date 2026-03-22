@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, Filter, ChevronDown, ChevronRight, CalendarDays } from "lucide-react";
+import { Search, Filter, ChevronDown, ChevronRight, CalendarDays, MapPin, Info, X } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Navbar from "@/components/Navbar";
@@ -8,135 +8,252 @@ import Footer from "@/components/Footer";
 const categories = ["Hôtels", "Maisons", "Maisons d'hôtes", "Fermes"];
 
 const evenements = {
-  "Culturel": ["Festival", "Exposition", "Concert", "Théâtre"],
-  "Sportif": ["Football", "Basketball", "Padel", "Volleyball", "Tennis"],
-  "Attraction": ["Parc d'attractions", "Zoo", "Aquarium", "Musée"],
+  "Culturel": ["Festival de Carthage", "Festival de Dougga", "Festival de Hammamet", "Journées Cinématographiques"],
+  "Sportif": ["Football", "Basketball", "Tennis", "Handball"],
+  "Attraction": ["Parc Carthage Land", "Zoo de Tunis", "Musée du Bardo", "Site archéologique"],
 };
 
 const saisons = ["Printemps", "Été", "Automne", "Hiver"];
 
 const attractionsProximite = [
-  "Stade de football",
-  "Salle de basketball",
-  "Terrain de padel",
-  "Terrain de volleyball",
-  "Salle de conférences",
+  "Stade Olympique de Radès",
+  "Salle omnisports de Sousse",
+  "Terrain de tennis",
+  "Terrain de handball",
+  "Palais des Congrès",
   "Salle des fêtes",
-  "Foire / Exposition",
-  "Centre commercial",
-  "Parc / Jardin",
+  "Foire Internationale de Tunis",
+  "Centre commercial Tunisia Mall",
+  "Parc du Belvédère",
 ];
+
+// Détails des événements et attractions cliquables
+const detailsEvenements: Record<string, { description: string; lieu: string; date: string; prix?: string }> = {
+  "Festival de Carthage": {
+    description: "Le Festival International de Carthage est le plus grand festival culturel de Tunisie, accueillant des artistes de renommée mondiale dans l'amphithéâtre romain de Carthage. Musique, théâtre, danse et spectacles variés chaque été depuis 1964.",
+    lieu: "Amphithéâtre de Carthage, Tunis",
+    date: "Juillet - Août 2026",
+    prix: "30 - 120 TND",
+  },
+  "Festival de Dougga": {
+    description: "Festival de théâtre et de musique classique organisé dans le site archéologique classé UNESCO de Dougga. Un cadre exceptionnel pour des spectacles inoubliables au cœur des ruines romaines.",
+    lieu: "Site archéologique de Dougga, Béja",
+    date: "Juin - Juillet 2026",
+    prix: "20 - 60 TND",
+  },
+  "Festival de Hammamet": {
+    description: "Le Festival International de Hammamet se déroule dans le Centre Culturel International de Hammamet. Musique, théâtre et arts visuels dans un cadre méditerranéen unique.",
+    lieu: "Centre Culturel International, Hammamet",
+    date: "Juillet - Août 2026",
+    prix: "25 - 80 TND",
+  },
+  "Journées Cinématographiques": {
+    description: "Les Journées Cinématographiques de Carthage (JCC) sont le plus ancien festival de cinéma du continent africain, fondé en 1966. Films arabes et africains en compétition.",
+    lieu: "Cité de la Culture, Tunis",
+    date: "Octobre - Novembre 2026",
+    prix: "10 - 30 TND",
+  },
+  "Football": {
+    description: "La Ligue 1 tunisienne avec les grands derbys : Espérance de Tunis vs Club Africain, Étoile du Sahel vs CS Sfaxien. Des matchs passionnants dans les plus grands stades du pays.",
+    lieu: "Stades divers en Tunisie",
+    date: "Toute la saison",
+  },
+  "Basketball": {
+    description: "Le championnat tunisien de basketball avec des clubs comme l'US Monastir et le Club Africain. Matchs dynamiques dans les salles omnisports modernes.",
+    lieu: "Salles omnisports en Tunisie",
+    date: "Octobre - Mai",
+  },
+  "Tennis": {
+    description: "Tournois nationaux et internationaux de tennis organisés dans les complexes sportifs tunisiens. Le Tennis Club de Tunis accueille régulièrement des compétitions ITF.",
+    lieu: "Complexes sportifs en Tunisie",
+    date: "Mars - Novembre",
+  },
+  "Handball": {
+    description: "La Tunisie est une nation forte du handball africain. Le championnat national offre des matchs intenses avec des clubs comme l'Espérance et l'Étoile du Sahel.",
+    lieu: "Salles omnisports en Tunisie",
+    date: "Septembre - Juin",
+  },
+  "Parc Carthage Land": {
+    description: "Le plus grand parc d'attractions de Tunisie situé à Hammamet Yasmine. Montagnes russes, manèges aquatiques, spectacles en plein air et zone pour enfants. Une journée de divertissement pour toute la famille.",
+    lieu: "Hammamet Yasmine, Nabeul",
+    date: "Ouvert toute l'année",
+    prix: "35 TND adulte / 25 TND enfant",
+  },
+  "Zoo de Tunis": {
+    description: "Le parc zoologique du Belvédère abrite plus de 100 espèces animales dans un cadre verdoyant au cœur de Tunis. Lions de l'Atlas, singes, reptiles et oiseaux exotiques.",
+    lieu: "Parc du Belvédère, Tunis",
+    date: "Ouvert tous les jours",
+    prix: "5 TND",
+  },
+  "Musée du Bardo": {
+    description: "Le Musée National du Bardo possède la plus grande collection de mosaïques romaines au monde. Classé patrimoine mondial de l'UNESCO, il retrace l'histoire de la Tunisie de la préhistoire à l'ère ottomane.",
+    lieu: "Le Bardo, Tunis",
+    date: "Mar-Dim, 9h-17h",
+    prix: "13 TND",
+  },
+  "Site archéologique": {
+    description: "La Tunisie regorge de sites archéologiques : Carthage (UNESCO), El Jem avec son colisée romain, Kerkouane (seule cité punique intacte), et Sbeitla avec ses temples romains.",
+    lieu: "Divers sites en Tunisie",
+    date: "Ouvert toute l'année",
+    prix: "8 - 12 TND",
+  },
+};
+
+const detailsAttractions: Record<string, { description: string; adresse: string; horaires?: string }> = {
+  "Stade Olympique de Radès": {
+    description: "Le Stade Olympique de Radès (Stade Hammadi Agrebi) est le plus grand stade de Tunisie avec 60 000 places. Il accueille les matchs de l'équipe nationale et les finales de coupe.",
+    adresse: "Radès, Ben Arous",
+    horaires: "Selon les événements",
+  },
+  "Salle omnisports de Sousse": {
+    description: "Salle multifonctionnelle accueillant basketball, handball et volleyball. Capacité de 6 000 places, rénovée en 2020.",
+    adresse: "Sousse, Tunisie",
+    horaires: "Selon les événements",
+  },
+  "Terrain de tennis": {
+    description: "Courts de tennis modernes disponibles dans les complexes sportifs et les hôtels balnéaires. Surfaces en dur et terre battue.",
+    adresse: "Disponible dans plusieurs villes",
+  },
+  "Terrain de handball": {
+    description: "Terrains couverts conformes aux normes internationales dans les principales villes tunisiennes.",
+    adresse: "Disponible dans plusieurs villes",
+  },
+  "Palais des Congrès": {
+    description: "Le Palais des Congrès de Tunis est un centre de conventions moderne accueillant conférences internationales, séminaires et expositions professionnelles.",
+    adresse: "Cité de la Culture, Tunis",
+    horaires: "Selon les événements",
+  },
+  "Salle des fêtes": {
+    description: "Salles de réception pour mariages, événements sociaux et célébrations. Disponibles dans toutes les villes tunisiennes.",
+    adresse: "Disponible partout en Tunisie",
+  },
+  "Foire Internationale de Tunis": {
+    description: "La Foire Internationale de Tunis au Parc des Expositions du Kram accueille des salons professionnels, foires commerciales et expositions thématiques tout au long de l'année.",
+    adresse: "Parc des Expositions, Le Kram, Tunis",
+    horaires: "Selon les salons",
+  },
+  "Centre commercial Tunisia Mall": {
+    description: "Le plus grand centre commercial de Tunisie avec plus de 150 boutiques, restaurants, cinéma et espace de divertissement.",
+    adresse: "Les Berges du Lac 2, Tunis",
+    horaires: "10h - 22h tous les jours",
+  },
+  "Parc du Belvédère": {
+    description: "Le plus grand parc urbain de Tunis (110 hectares) avec zoo, jardin botanique, lac et sentiers ombragés. Un poumon vert au cœur de la capitale.",
+    adresse: "Belvédère, Tunis",
+    horaires: "6h - 20h",
+  },
+};
 
 type FilterMode = "categorie" | "evenement" | "saison" | "attraction";
 
 const mockLogements = [
   {
-    id: 1, nom: "Hôtel Royal Palace", lat: 33.5731, lng: -7.5898, proprietaire: "Ahmed Benjelloun",
+    id: 1, nom: "Hôtel El Mouradi Hammamet", lat: 36.4000, lng: 10.6167, proprietaire: "Ahmed Ben Salah",
     datesDisponibles: [new Date(2026, 3, 5), new Date(2026, 3, 10), new Date(2026, 3, 15), new Date(2026, 4, 1), new Date(2026, 4, 12)],
     datesEvenements: [new Date(2026, 3, 8), new Date(2026, 4, 20)],
     avis: 128, categorie: "Hôtels",
-    evenements: [{ nom: "Festival", distance: 0.5 }, { nom: "Concert", distance: 1.2 }],
+    evenements: [{ nom: "Festival de Hammamet", distance: 0.5 }, { nom: "Parc Carthage Land", distance: 1.2 }],
     saison: "Été",
-    attractions: [{ nom: "Stade de football", distance: 0.3 }, { nom: "Salle de conférences", distance: 1.0 }],
+    attractions: [{ nom: "Parc du Belvédère", distance: 80 }, { nom: "Centre commercial Tunisia Mall", distance: 75 }],
   },
   {
-    id: 2, nom: "Hôtel Marrakech Inn", lat: 31.6295, lng: -7.9811, proprietaire: "Fatima Zahra",
+    id: 2, nom: "Hôtel Laico Tunis", lat: 36.8065, lng: 10.1815, proprietaire: "Fatima Trabelsi",
     datesDisponibles: [new Date(2026, 3, 2), new Date(2026, 3, 18), new Date(2026, 4, 5)],
     datesEvenements: [new Date(2026, 3, 14)],
     avis: 95, categorie: "Hôtels",
-    evenements: [{ nom: "Exposition", distance: 0.8 }, { nom: "Théâtre", distance: 2.0 }],
+    evenements: [{ nom: "Journées Cinématographiques", distance: 0.8 }, { nom: "Festival de Carthage", distance: 5.0 }],
     saison: "Printemps",
-    attractions: [{ nom: "Salle des fêtes", distance: 0.6 }, { nom: "Parc / Jardin", distance: 1.5 }],
+    attractions: [{ nom: "Musée du Bardo", distance: 2.0 }, { nom: "Parc du Belvédère", distance: 1.5 }],
   },
   {
-    id: 3, nom: "Hôtel Casablanca View", lat: 33.5950, lng: -7.6187, proprietaire: "Karim El Fassi",
+    id: 3, nom: "Hôtel Sheraton Sousse", lat: 35.8256, lng: 10.6369, proprietaire: "Karim Gharbi",
     datesDisponibles: [new Date(2026, 4, 3), new Date(2026, 4, 20)],
     datesEvenements: [new Date(2026, 3, 25), new Date(2026, 4, 10)],
     avis: 210, categorie: "Hôtels",
-    evenements: [{ nom: "Football", distance: 0.2 }, { nom: "Tennis", distance: 3.0 }],
+    evenements: [{ nom: "Football", distance: 0.5 }, { nom: "Tennis", distance: 3.0 }],
     saison: "Été",
-    attractions: [{ nom: "Stade de football", distance: 0.2 }, { nom: "Centre commercial", distance: 0.9 }],
+    attractions: [{ nom: "Salle omnisports de Sousse", distance: 2.0 }, { nom: "Centre commercial Tunisia Mall", distance: 120 }],
   },
   {
-    id: 4, nom: "Maison du Jardin", lat: 34.0209, lng: -6.8416, proprietaire: "Nadia Berrada",
+    id: 4, nom: "Maison Sidi Bou Saïd", lat: 36.8687, lng: 10.3497, proprietaire: "Nadia Bouzid",
     datesDisponibles: [new Date(2026, 3, 1), new Date(2026, 3, 7), new Date(2026, 3, 22), new Date(2026, 4, 8)],
     datesEvenements: [new Date(2026, 3, 12)],
     avis: 34, categorie: "Maisons",
-    evenements: [{ nom: "Parc d'attractions", distance: 1.0 }, { nom: "Zoo", distance: 2.5 }],
+    evenements: [{ nom: "Festival de Carthage", distance: 2.0 }, { nom: "Site archéologique", distance: 1.5 }],
     saison: "Printemps",
-    attractions: [{ nom: "Parc / Jardin", distance: 0.1 }, { nom: "Foire / Exposition", distance: 1.8 }],
+    attractions: [{ nom: "Parc du Belvédère", distance: 10 }, { nom: "Musée du Bardo", distance: 12 }],
   },
   {
-    id: 5, nom: "Résidence Marina", lat: 33.6065, lng: -7.6322, proprietaire: "Youssef Tazi",
+    id: 5, nom: "Résidence Marina Yasmine", lat: 36.3833, lng: 10.5500, proprietaire: "Youssef Hammami",
     datesDisponibles: [new Date(2026, 3, 4), new Date(2026, 3, 11), new Date(2026, 4, 2), new Date(2026, 4, 15)],
     datesEvenements: [new Date(2026, 4, 5)],
     avis: 156, categorie: "Maisons",
-    evenements: [{ nom: "Concert", distance: 0.7 }, { nom: "Festival", distance: 1.5 }],
+    evenements: [{ nom: "Parc Carthage Land", distance: 0.3 }, { nom: "Festival de Hammamet", distance: 2.0 }],
     saison: "Été",
-    attractions: [{ nom: "Centre commercial", distance: 0.4 }, { nom: "Salle des fêtes", distance: 1.2 }],
+    attractions: [{ nom: "Centre commercial Tunisia Mall", distance: 70 }, { nom: "Salle des fêtes", distance: 1.2 }],
   },
   {
-    id: 6, nom: "Villa des Dunes", lat: 30.4278, lng: -9.5981, proprietaire: "Samira Alaoui",
+    id: 6, nom: "Villa Djerba Heritage", lat: 33.8076, lng: 10.8451, proprietaire: "Samira Jlassi",
     datesDisponibles: [new Date(2026, 5, 1), new Date(2026, 5, 15)],
     datesEvenements: [new Date(2026, 5, 10)],
     avis: 64, categorie: "Maisons",
-    evenements: [{ nom: "Volleyball", distance: 0.3 }, { nom: "Padel", distance: 0.8 }],
+    evenements: [{ nom: "Site archéologique", distance: 3.0 }, { nom: "Handball", distance: 5.0 }],
     saison: "Été",
-    attractions: [{ nom: "Terrain de padel", distance: 0.3 }, { nom: "Terrain de volleyball", distance: 0.5 }],
+    attractions: [{ nom: "Terrain de handball", distance: 5.0 }, { nom: "Salle des fêtes", distance: 2.0 }],
   },
   {
-    id: 7, nom: "Riad Les Oliviers", lat: 31.6340, lng: -8.0100, proprietaire: "Hassan Moussaoui",
+    id: 7, nom: "Dar El Jeld", lat: 36.7994, lng: 10.1712, proprietaire: "Hassan Meddeb",
     datesDisponibles: [new Date(2026, 3, 3), new Date(2026, 3, 19), new Date(2026, 4, 7)],
     datesEvenements: [new Date(2026, 3, 20)],
     avis: 87, categorie: "Maisons d'hôtes",
-    evenements: [{ nom: "Exposition", distance: 0.4 }, { nom: "Musée", distance: 1.0 }],
+    evenements: [{ nom: "Journées Cinématographiques", distance: 1.0 }, { nom: "Musée du Bardo", distance: 3.0 }],
     saison: "Automne",
-    attractions: [{ nom: "Salle de conférences", distance: 0.7 }, { nom: "Parc / Jardin", distance: 0.3 }],
+    attractions: [{ nom: "Palais des Congrès", distance: 4.0 }, { nom: "Parc du Belvédère", distance: 0.5 }],
   },
   {
-    id: 8, nom: "Maison d'hôtes Atlas", lat: 34.0331, lng: -5.0003, proprietaire: "Amina Chraibi",
+    id: 8, nom: "Dar Zaghouan", lat: 36.4025, lng: 10.1427, proprietaire: "Amina Cherif",
     datesDisponibles: [new Date(2026, 4, 10), new Date(2026, 4, 25)],
     datesEvenements: [new Date(2026, 4, 18)],
     avis: 45, categorie: "Maisons d'hôtes",
-    evenements: [{ nom: "Basketball", distance: 0.6 }, { nom: "Football", distance: 1.5 }],
+    evenements: [{ nom: "Basketball", distance: 15.0 }, { nom: "Football", distance: 20.0 }],
     saison: "Hiver",
-    attractions: [{ nom: "Salle de basketball", distance: 0.6 }, { nom: "Stade de football", distance: 1.5 }],
+    attractions: [{ nom: "Terrain de tennis", distance: 5.0 }, { nom: "Stade Olympique de Radès", distance: 40 }],
   },
   {
-    id: 9, nom: "Dar Essalam", lat: 31.6300, lng: -7.9890, proprietaire: "Omar Kettani",
+    id: 9, nom: "Dar Essalem Tozeur", lat: 33.9197, lng: 8.1335, proprietaire: "Omar Khelifi",
     datesDisponibles: [new Date(2026, 3, 6), new Date(2026, 3, 14), new Date(2026, 3, 28), new Date(2026, 4, 9)],
     datesEvenements: [new Date(2026, 3, 10), new Date(2026, 4, 1)],
     avis: 72, categorie: "Maisons d'hôtes",
-    evenements: [{ nom: "Festival", distance: 0.9 }, { nom: "Théâtre", distance: 1.8 }],
+    evenements: [{ nom: "Festival de Dougga", distance: 200 }, { nom: "Site archéologique", distance: 5.0 }],
     saison: "Printemps",
-    attractions: [{ nom: "Salle des fêtes", distance: 0.5 }, { nom: "Foire / Exposition", distance: 2.0 }],
+    attractions: [{ nom: "Salle des fêtes", distance: 1.0 }, { nom: "Foire Internationale de Tunis", distance: 350 }],
   },
   {
-    id: 10, nom: "Ferme du Soleil", lat: 30.9200, lng: -6.9000, proprietaire: "Rachid Benali",
+    id: 10, nom: "Ferme Bio Testour", lat: 36.5500, lng: 9.4450, proprietaire: "Rachid Sassi",
     datesDisponibles: [new Date(2026, 3, 8), new Date(2026, 3, 20), new Date(2026, 4, 4), new Date(2026, 4, 18)],
     datesEvenements: [new Date(2026, 4, 12)],
     avis: 23, categorie: "Fermes",
-    evenements: [{ nom: "Zoo", distance: 2.0 }, { nom: "Parc d'attractions", distance: 3.5 }],
+    evenements: [{ nom: "Festival de Dougga", distance: 30 }, { nom: "Site archéologique", distance: 25 }],
     saison: "Été",
-    attractions: [{ nom: "Parc / Jardin", distance: 0.2 }, { nom: "Foire / Exposition", distance: 4.0 }],
+    attractions: [{ nom: "Parc du Belvédère", distance: 100 }, { nom: "Foire Internationale de Tunis", distance: 95 }],
   },
   {
-    id: 11, nom: "Ferme Bio Atlas", lat: 31.3500, lng: -7.7300, proprietaire: "Leila Ouazzani",
+    id: 11, nom: "Ferme Oléicole Sfax", lat: 34.7406, lng: 10.7603, proprietaire: "Leila Bouazizi",
     datesDisponibles: [new Date(2026, 3, 9), new Date(2026, 3, 25), new Date(2026, 4, 6)],
     datesEvenements: [new Date(2026, 3, 30)],
     avis: 18, categorie: "Fermes",
-    evenements: [{ nom: "Exposition", distance: 1.5 }, { nom: "Concert", distance: 3.0 }],
+    evenements: [{ nom: "Football", distance: 2.0 }, { nom: "Handball", distance: 3.0 }],
     saison: "Automne",
-    attractions: [{ nom: "Centre commercial", distance: 5.0 }, { nom: "Parc / Jardin", distance: 0.5 }],
+    attractions: [{ nom: "Salle omnisports de Sousse", distance: 130 }, { nom: "Terrain de handball", distance: 3.0 }],
   },
   {
-    id: 12, nom: "Domaine des Oliviers", lat: 33.8935, lng: -5.5473, proprietaire: "Mehdi Slaoui",
+    id: 12, nom: "Domaine Viticole Grombalia", lat: 36.6000, lng: 10.5000, proprietaire: "Mehdi Daoud",
     datesDisponibles: [new Date(2026, 5, 5), new Date(2026, 5, 20)],
     datesEvenements: [new Date(2026, 5, 15)],
     avis: 41, categorie: "Fermes",
-    evenements: [{ nom: "Festival", distance: 1.2 }, { nom: "Aquarium", distance: 4.0 }],
+    evenements: [{ nom: "Festival de Carthage", distance: 40 }, { nom: "Zoo de Tunis", distance: 35 }],
     saison: "Hiver",
-    attractions: [{ nom: "Salle de conférences", distance: 2.0 }, { nom: "Salle des fêtes", distance: 3.0 }],
+    attractions: [{ nom: "Palais des Congrès", distance: 50 }, { nom: "Centre commercial Tunisia Mall", distance: 45 }],
   },
 ];
 
@@ -148,17 +265,15 @@ const Hotels = () => {
   const [selectedAttraction, setSelectedAttraction] = useState<string | null>(null);
   const [expandedEventGroup, setExpandedEventGroup] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [detailPopup, setDetailPopup] = useState<{ type: "evenement" | "attraction"; nom: string } | null>(null);
 
-  // Default: all logements sorted alphabetically by category then name
   const filtered = useMemo(() => {
     let results = mockLogements;
 
-    // Apply search
     if (search) {
       results = results.filter(h => h.nom.toLowerCase().includes(search.toLowerCase()));
     }
 
-    // Apply filter
     if (filterMode === "categorie" && selectedCategory) {
       results = results.filter(h => h.categorie === selectedCategory);
     } else if (filterMode === "evenement" && selectedEvenement) {
@@ -169,7 +284,6 @@ const Hotels = () => {
       results = results.filter(h => h.attractions.some(a => a.nom === selectedAttraction));
     }
 
-    // Sort: by category alphabetically, then by name alphabetically
     return [...results].sort((a, b) => {
       const catCompare = a.categorie.localeCompare(b.categorie, "fr");
       if (catCompare !== 0) return catCompare;
@@ -179,7 +293,6 @@ const Hotels = () => {
 
   const handleFilterMode = (mode: FilterMode) => {
     if (filterMode === mode) {
-      // Deselect filter mode → back to default
       setFilterMode(null);
       setSelectedCategory(null);
       setSelectedEvenement(null);
@@ -188,7 +301,6 @@ const Hotels = () => {
       setExpandedEventGroup(null);
     } else {
       setFilterMode(mode);
-      // Reset sub-selections
       setSelectedCategory(null);
       setSelectedEvenement(null);
       setSelectedSaison(null);
@@ -221,10 +333,11 @@ const Hotels = () => {
     return "Tous les logements (A-Z)";
   };
 
-  // For event filter: show all events from all groups in a flat list for selection
-  const allEvenementsList = Object.entries(evenements).flatMap(([group, items]) =>
-    items.map(item => ({ group, nom: item }))
-  );
+  const detail = detailPopup
+    ? detailPopup.type === "evenement"
+      ? detailsEvenements[detailPopup.nom]
+      : detailsAttractions[detailPopup.nom]
+    : null;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -440,10 +553,15 @@ const Hotels = () => {
                       <td className="text-xs">
                         <div className="space-y-0.5">
                           {hotel.evenements.map((e) => (
-                            <div key={e.nom} className="whitespace-nowrap">
-                              <span className="font-medium text-foreground">{e.nom}</span>
-                              <span className="text-muted-foreground ml-1">({e.distance} km)</span>
-                            </div>
+                            <button
+                              key={e.nom}
+                              onClick={() => setDetailPopup({ type: "evenement", nom: e.nom })}
+                              className="whitespace-nowrap flex items-center gap-1 hover:text-primary transition-colors text-left"
+                            >
+                              <Info size={12} className="text-primary shrink-0" />
+                              <span className="font-medium text-foreground underline decoration-dotted">{e.nom}</span>
+                              <span className="text-muted-foreground">({e.distance} km)</span>
+                            </button>
                           ))}
                         </div>
                       </td>
@@ -455,10 +573,15 @@ const Hotels = () => {
                       <td className="text-xs">
                         <div className="space-y-0.5">
                           {hotel.attractions.map((a) => (
-                            <div key={a.nom} className="whitespace-nowrap">
-                              <span className="font-medium text-foreground">{a.nom}</span>
-                              <span className="text-muted-foreground ml-1">({a.distance} km)</span>
-                            </div>
+                            <button
+                              key={a.nom}
+                              onClick={() => setDetailPopup({ type: "attraction", nom: a.nom })}
+                              className="whitespace-nowrap flex items-center gap-1 hover:text-primary transition-colors text-left"
+                            >
+                              <Info size={12} className="text-primary shrink-0" />
+                              <span className="font-medium text-foreground underline decoration-dotted">{a.nom}</span>
+                              <span className="text-muted-foreground">({a.distance} km)</span>
+                            </button>
                           ))}
                         </div>
                       </td>
@@ -471,6 +594,55 @@ const Hotels = () => {
           </div>
         </main>
       </div>
+
+      {/* Detail popup */}
+      {detailPopup && detail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setDetailPopup(null)}>
+          <div
+            className="bg-background rounded-xl border border-border shadow-xl max-w-lg w-full mx-4 p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button onClick={() => setDetailPopup(null)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+              <X size={20} />
+            </button>
+            <h3 className="font-display text-xl font-semibold mb-3 pr-8">{detailPopup.nom}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{"description" in detail ? detail.description : ""}</p>
+            <div className="space-y-2 text-sm">
+              {"lieu" in detail && (
+                <div className="flex items-start gap-2">
+                  <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
+                  <span><strong>Lieu :</strong> {(detail as any).lieu}</span>
+                </div>
+              )}
+              {"adresse" in detail && (
+                <div className="flex items-start gap-2">
+                  <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
+                  <span><strong>Adresse :</strong> {(detail as any).adresse}</span>
+                </div>
+              )}
+              {"date" in detail && (
+                <div className="flex items-start gap-2">
+                  <CalendarDays size={16} className="text-primary shrink-0 mt-0.5" />
+                  <span><strong>Date :</strong> {(detail as any).date}</span>
+                </div>
+              )}
+              {"horaires" in detail && (detail as any).horaires && (
+                <div className="flex items-start gap-2">
+                  <CalendarDays size={16} className="text-primary shrink-0 mt-0.5" />
+                  <span><strong>Horaires :</strong> {(detail as any).horaires}</span>
+                </div>
+              )}
+              {"prix" in detail && (detail as any).prix && (
+                <div className="flex items-start gap-2">
+                  <span className="text-primary font-bold shrink-0">💰</span>
+                  <span><strong>Prix :</strong> {(detail as any).prix}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

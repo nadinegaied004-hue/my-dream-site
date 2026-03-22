@@ -1,88 +1,77 @@
-import { Star, User } from "lucide-react";
+import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-// Formule de note sur 20 : chaque question vaut des points, bonus pour commentaire et photos
 const calculerNoteSur20 = (reponses: { positives: number; total: number; aCommentaire: boolean; nbPhotos: number }) => {
-  const baseScore = (reponses.positives / reponses.total) * 14; // 14 pts max pour les questions
-  const commentBonus = reponses.aCommentaire ? 3 : 0; // 3 pts pour un commentaire
-  const photoBonus = Math.min(reponses.nbPhotos, 3); // 1 pt par photo, max 3 pts
+  const baseScore = (reponses.positives / reponses.total) * 14;
+  const commentBonus = reponses.aCommentaire ? 3 : 0;
+  const photoBonus = Math.min(reponses.nbPhotos, 3);
   return Math.min(20, Math.round(baseScore + commentBonus + photoBonus));
 };
 
-// Formule de réduction : les clients ayant donné un avis reçoivent un % de réduction
 const calculerReduction = (noteSur20: number) => {
-  if (noteSur20 >= 18) return 15; // 15% pour les notes excellentes
-  if (noteSur20 >= 14) return 10; // 10% pour les bonnes notes
-  if (noteSur20 >= 10) return 5;  // 5% pour les notes moyennes
-  return 2; // 2% minimum pour avoir participé
+  if (noteSur20 >= 18) return 15;
+  if (noteSur20 >= 14) return 10;
+  if (noteSur20 >= 10) return 5;
+  return 2;
 };
 
 const mockReviews = [
   {
-    id: 1, nomComplet: "Ahmed Benjelloun", note: 5,
+    id: 1, nomComplet: "Ahmed Ben Salah", note: 5,
     noteSur20: calculerNoteSur20({ positives: 8, total: 9, aCommentaire: true, nbPhotos: 2 }),
-    avis: "Excellent séjour ! L'hôtel était impeccable et le personnel très accueillant.",
-    date: "12 Mars 2026", photo: null,
-    reduction: 0,
+    avis: "Excellent séjour à Hammamet ! L'hôtel était impeccable et le personnel très accueillant.",
+    date: "12 Mars 2026", photo: null, reduction: 0,
   },
   {
     id: 2, nomComplet: "Sarah Mansouri", note: 4,
     noteSur20: calculerNoteSur20({ positives: 7, total: 9, aCommentaire: true, nbPhotos: 1 }),
-    avis: "Très bon logement, propre et bien situé. Je recommande vivement.",
-    date: "8 Mars 2026", photo: null,
-    reduction: 0,
+    avis: "Très bon logement à Sidi Bou Saïd, propre et bien situé. Je recommande vivement.",
+    date: "8 Mars 2026", photo: null, reduction: 0,
   },
   {
-    id: 3, nomComplet: "Youssef Khaldoun", note: 5,
+    id: 3, nomComplet: "Youssef Hammami", note: 5,
     noteSur20: calculerNoteSur20({ positives: 9, total: 9, aCommentaire: true, nbPhotos: 3 }),
-    avis: "Une expérience inoubliable. Le service était au top niveau.",
-    date: "5 Mars 2026", photo: null,
-    reduction: 0,
+    avis: "Une expérience inoubliable à Djerba. Le service était au top niveau.",
+    date: "5 Mars 2026", photo: null, reduction: 0,
   },
   {
-    id: 4, nomComplet: "Fatima Zahra Idrissi", note: 3,
+    id: 4, nomComplet: "Fatima Trabelsi", note: 3,
     noteSur20: calculerNoteSur20({ positives: 5, total: 9, aCommentaire: true, nbPhotos: 0 }),
-    avis: "Correct dans l'ensemble, mais la localisation pourrait être meilleure.",
-    date: "1 Mars 2026", photo: null,
-    reduction: 0,
+    avis: "Correct dans l'ensemble, mais la localisation à Sousse pourrait être meilleure.",
+    date: "1 Mars 2026", photo: null, reduction: 0,
   },
   {
-    id: 5, nomComplet: "Omar Laaroussi", note: 5,
+    id: 5, nomComplet: "Omar Khelifi", note: 5,
     noteSur20: calculerNoteSur20({ positives: 8, total: 9, aCommentaire: true, nbPhotos: 2 }),
-    avis: "Parfait pour un séjour en famille. Les enfants ont adoré.",
-    date: "25 Fév 2026", photo: null,
-    reduction: 0,
+    avis: "Parfait pour un séjour en famille à Tozeur. Les enfants ont adoré.",
+    date: "25 Fév 2026", photo: null, reduction: 0,
   },
   {
-    id: 6, nomComplet: "Amina Rahmani", note: 4,
+    id: 6, nomComplet: "Amina Cherif", note: 4,
     noteSur20: calculerNoteSur20({ positives: 7, total: 9, aCommentaire: false, nbPhotos: 1 }),
-    avis: "Bon rapport qualité/prix. L'accueil était chaleureux.",
-    date: "20 Fév 2026", photo: null,
-    reduction: 0,
+    avis: "Bon rapport qualité/prix à Zaghouan. L'accueil était chaleureux.",
+    date: "20 Fév 2026", photo: null, reduction: 0,
   },
   {
-    id: 7, nomComplet: "Karim Daoudi", note: 4,
+    id: 7, nomComplet: "Karim Gharbi", note: 4,
     noteSur20: calculerNoteSur20({ positives: 7, total: 9, aCommentaire: true, nbPhotos: 0 }),
-    avis: "Belle vue, chambres spacieuses. Un petit déjeuner copieux.",
-    date: "15 Fév 2026", photo: null,
-    reduction: 0,
+    avis: "Belle vue sur la Médina de Tunis, chambres spacieuses. Un petit déjeuner copieux.",
+    date: "15 Fév 2026", photo: null, reduction: 0,
   },
   {
-    id: 8, nomComplet: "Nadia Hassani", note: 5,
+    id: 8, nomComplet: "Nadia Bouzid", note: 5,
     noteSur20: calculerNoteSur20({ positives: 9, total: 9, aCommentaire: true, nbPhotos: 2 }),
-    avis: "Je reviens chaque année et je ne suis jamais déçue !",
-    date: "10 Fév 2026", photo: null,
-    reduction: 0,
+    avis: "Je reviens chaque année à Sidi Bou Saïd et je ne suis jamais déçue !",
+    date: "10 Fév 2026", photo: null, reduction: 0,
   },
   {
-    id: 9, nomComplet: "Rachid Tahiri", note: 3,
+    id: 9, nomComplet: "Rachid Sassi", note: 3,
     noteSur20: calculerNoteSur20({ positives: 4, total: 9, aCommentaire: true, nbPhotos: 0 }),
-    avis: "Séjour agréable mais quelques améliorations à apporter.",
-    date: "5 Fév 2026", photo: null,
-    reduction: 0,
+    avis: "Séjour agréable à Testour mais quelques améliorations à apporter.",
+    date: "5 Fév 2026", photo: null, reduction: 0,
   },
 ].map(r => ({ ...r, reduction: calculerReduction(r.noteSur20) }));
 
@@ -141,7 +130,6 @@ const Avis = () => (
         ))}
       </div>
 
-      {/* CTA qui redirige vers l'historique des réservations */}
       <div className="auth-container text-center">
         <h3 className="font-display text-xl font-semibold mb-4">Veuillez entrer votre avis</h3>
         <p className="text-muted-foreground mb-6">
