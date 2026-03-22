@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { Star, Camera, CheckCircle, XCircle, Send } from "lucide-react";
+import { Star, Camera, CheckCircle, Send, Gift } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const mockReservations = [
-  { id: 1, nomLog: "Hôtel Royal Palace", periode: "3 nuits", dateDebut: "05/04/2026", avisEnvoye: true },
-  { id: 2, nomLog: "Résidence Marina", periode: "5 nuits", dateDebut: "12/04/2026", avisEnvoye: false },
-  { id: 3, nomLog: "Riad Les Oliviers", periode: "2 nuits", dateDebut: "19/04/2026", avisEnvoye: false },
+  { id: 1, nomLog: "Hôtel El Mouradi Hammamet", periode: "3 nuits", dateDebut: "05/04/2026", avisEnvoye: true },
+  { id: 2, nomLog: "Résidence Marina Yasmine", periode: "5 nuits", dateDebut: "12/04/2026", avisEnvoye: false },
+  { id: 3, nomLog: "Dar El Jeld", periode: "2 nuits", dateDebut: "19/04/2026", avisEnvoye: false },
 ];
 
 const mockEvenements = [
-  { id: 1, nom: "Festival International de Marrakech", date: "10/04/2026", lieu: "Palais des Congrès" },
-  { id: 2, nom: "Match Football - Raja vs Wydad", date: "15/04/2026", lieu: "Stade Mohammed V" },
-  { id: 3, nom: "Exposition Art Contemporain", date: "20/04/2026", lieu: "Musée MACMA" },
+  { id: 1, nom: "Festival International de Carthage", date: "10/07/2026", lieu: "Amphithéâtre de Carthage" },
+  { id: 2, nom: "Match Football - EST vs CSS", date: "15/04/2026", lieu: "Stade Olympique de Radès" },
+  { id: 3, nom: "Festival de Jazz de Tabarka", date: "20/06/2026", lieu: "Fort Génois, Tabarka" },
 ];
 
 type Question = { id: string; label: string; reponse: boolean | null };
@@ -29,6 +29,25 @@ const questionsInitiales: Question[] = [
   { id: "derange", label: "Quelque chose vous a dérangé (bruit, etc.) ?", reponse: null },
 ];
 
+// Note sur 20 : questions (14 pts) + commentaire (3 pts) + photos (3 pts)
+const calculerNoteSur20 = (questions: Question[], commentaire: string, nbPhotos: number) => {
+  const positives = questions.filter(q => {
+    if (q.id === "derange") return q.reponse === false;
+    return q.reponse === true;
+  }).length;
+  const baseScore = (positives / questions.length) * 14;
+  const commentBonus = commentaire.trim().length > 0 ? 3 : 0;
+  const photoBonus = Math.min(nbPhotos, 3);
+  return Math.min(20, Math.round(baseScore + commentBonus + photoBonus));
+};
+
+const calculerReduction = (noteSur20: number) => {
+  if (noteSur20 >= 18) return 15;
+  if (noteSur20 >= 14) return 10;
+  if (noteSur20 >= 10) return 5;
+  return 2;
+};
+
 const AvisPersonnel = () => {
   const [activeTab, setActiveTab] = useState<"logement" | "evenement">("logement");
   const [selectedReservation, setSelectedReservation] = useState<number | null>(null);
@@ -37,14 +56,13 @@ const AvisPersonnel = () => {
   const [photos, setPhotos] = useState<string[]>([]);
   const [commentaire, setCommentaire] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [resultat, setResultat] = useState<{ note20: number; reduction: number } | null>(null);
 
   const handleReponse = (id: string, val: boolean) => {
     setQuestions(questions.map(q => q.id === id ? { ...q, reponse: val } : q));
   };
 
   const noteCalculee = () => {
-    const answered = questions.filter(q => q.reponse !== null);
-    if (answered.length === 0) return 0;
     const positives = questions.filter(q => {
       if (q.id === "derange") return q.reponse === false;
       return q.reponse === true;
@@ -57,15 +75,20 @@ const AvisPersonnel = () => {
   };
 
   const handleSubmit = () => {
+    const note20 = calculerNoteSur20(questions, commentaire, photos.length);
+    const reduction = calculerReduction(note20);
+    setResultat({ note20, reduction });
     setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setSelectedReservation(null);
-      setSelectedEvenement(null);
-      setQuestions(questionsInitiales);
-      setPhotos([]);
-      setCommentaire("");
-    }, 3000);
+  };
+
+  const handleReset = () => {
+    setSubmitted(false);
+    setResultat(null);
+    setSelectedReservation(null);
+    setSelectedEvenement(null);
+    setQuestions(questionsInitiales);
+    setPhotos([]);
+    setCommentaire("");
   };
 
   const allAnswered = questions.every(q => q.reponse !== null);
@@ -100,7 +123,7 @@ const AvisPersonnel = () => {
         </div>
 
         {/* Reservation table */}
-        {activeTab === "logement" && !selectedReservation && (
+        {activeTab === "logement" && !selectedReservation && !submitted && (
           <div className="overflow-x-auto rounded-lg border border-border mb-8">
             <table className="hotel-table w-full">
               <thead>
@@ -147,7 +170,7 @@ const AvisPersonnel = () => {
         )}
 
         {/* Event selection */}
-        {activeTab === "evenement" && !selectedEvenement && (
+        {activeTab === "evenement" && !selectedEvenement && !submitted && (
           <div className="max-w-2xl mx-auto">
             <h3 className="font-display font-semibold text-lg mb-4">Sélectionnez l'événement sur lequel vous voulez donner votre avis</h3>
             <div className="space-y-3">
@@ -202,7 +225,6 @@ const AvisPersonnel = () => {
                 ))}
               </div>
 
-              {/* Si localisation non précisée */}
               {questions.find(q => q.id === "localisation")?.reponse === false && (
                 <div className="mt-4 p-3 rounded-lg bg-accent/50 text-sm text-accent-foreground">
                   📍 Si non, voici la carte — vous pourrez préciser l'emplacement exact.
@@ -228,7 +250,7 @@ const AvisPersonnel = () => {
                 )}
               </div>
 
-              {/* Commentaire libre */}
+              {/* Commentaire */}
               <div className="mt-6">
                 <h4 className="text-sm font-semibold mb-2">Vous pouvez vous exprimer librement :</h4>
                 <textarea
@@ -256,7 +278,6 @@ const AvisPersonnel = () => {
                 </div>
               )}
 
-              {/* Submit */}
               <button
                 onClick={handleSubmit}
                 disabled={!allAnswered}
@@ -273,14 +294,46 @@ const AvisPersonnel = () => {
           </div>
         )}
 
-        {/* Confirmation */}
-        {submitted && (
-          <div className="max-w-md mx-auto text-center py-12">
+        {/* Confirmation avec bonus */}
+        {submitted && resultat && (
+          <div className="max-w-lg mx-auto text-center py-12">
             <CheckCircle className="mx-auto text-green-600 mb-4" size={48} />
             <h3 className="font-display text-xl font-semibold mb-2">Merci beaucoup !</h3>
-            <p className="text-muted-foreground">
-              Votre avis a été enregistré avec succès. Vous contribuez à améliorer l'expérience pour tous.
+            <p className="text-muted-foreground mb-6">
+              Votre avis a été enregistré avec succès.
             </p>
+
+            {/* Points bonus & réduction */}
+            <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+              <div className="flex items-center justify-center gap-2 text-primary">
+                <Gift size={24} />
+                <span className="font-display text-lg font-semibold">Vos récompenses</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-lg bg-primary/10">
+                  <p className="text-sm text-muted-foreground mb-1">Note obtenue</p>
+                  <p className="text-2xl font-bold text-primary">{resultat.note20}/20</p>
+                </div>
+                <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
+                  <p className="text-sm text-muted-foreground mb-1">Réduction obtenue</p>
+                  <p className="text-2xl font-bold text-green-600">-{resultat.reduction}%</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                🎁 Votre réduction de <strong>{resultat.reduction}%</strong> sera appliquée automatiquement sur votre prochaine réservation.
+              </p>
+
+              <div className="text-xs text-muted-foreground/60 space-y-1">
+                <p>📝 Commentaire : +3 pts | 📸 Photos : +1 pt/photo (max 3)</p>
+                <p>≥18/20 → 15% | ≥14/20 → 10% | ≥10/20 → 5% | &lt;10/20 → 2%</p>
+              </div>
+            </div>
+
+            <button onClick={handleReset} className="btn-primary mt-6">
+              Retour à l'historique
+            </button>
           </div>
         )}
       </main>
