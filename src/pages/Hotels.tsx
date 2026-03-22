@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Search, Filter, ChevronDown, ChevronRight, CalendarDays } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -141,22 +141,61 @@ const mockLogements = [
 ];
 
 const Hotels = () => {
-  const [filterMode, setFilterMode] = useState<FilterMode>("categorie");
-  const [selectedCategory, setSelectedCategory] = useState("Hôtels");
+  const [filterMode, setFilterMode] = useState<FilterMode | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedEvenement, setSelectedEvenement] = useState<string | null>(null);
   const [selectedSaison, setSelectedSaison] = useState<string | null>(null);
   const [selectedAttraction, setSelectedAttraction] = useState<string | null>(null);
   const [expandedEventGroup, setExpandedEventGroup] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
-  const filtered = mockLogements.filter((h) => {
-    const matchSearch = h.nom.toLowerCase().includes(search.toLowerCase());
-    if (filterMode === "categorie") return h.categorie === selectedCategory && matchSearch;
-    if (filterMode === "evenement" && selectedEvenement) return h.evenements.some(e => e.nom === selectedEvenement) && matchSearch;
-    if (filterMode === "saison" && selectedSaison) return h.saison === selectedSaison && matchSearch;
-    if (filterMode === "attraction" && selectedAttraction) return h.attractions.some(a => a.nom === selectedAttraction) && matchSearch;
-    return matchSearch;
-  });
+  // Default: all logements sorted alphabetically by category then name
+  const filtered = useMemo(() => {
+    let results = mockLogements;
+
+    // Apply search
+    if (search) {
+      results = results.filter(h => h.nom.toLowerCase().includes(search.toLowerCase()));
+    }
+
+    // Apply filter
+    if (filterMode === "categorie" && selectedCategory) {
+      results = results.filter(h => h.categorie === selectedCategory);
+    } else if (filterMode === "evenement" && selectedEvenement) {
+      results = results.filter(h => h.evenements.some(e => e.nom === selectedEvenement));
+    } else if (filterMode === "saison" && selectedSaison) {
+      results = results.filter(h => h.saison === selectedSaison);
+    } else if (filterMode === "attraction" && selectedAttraction) {
+      results = results.filter(h => h.attractions.some(a => a.nom === selectedAttraction));
+    }
+
+    // Sort: by category alphabetically, then by name alphabetically
+    return [...results].sort((a, b) => {
+      const catCompare = a.categorie.localeCompare(b.categorie, "fr");
+      if (catCompare !== 0) return catCompare;
+      return a.nom.localeCompare(b.nom, "fr");
+    });
+  }, [filterMode, selectedCategory, selectedEvenement, selectedSaison, selectedAttraction, search]);
+
+  const handleFilterMode = (mode: FilterMode) => {
+    if (filterMode === mode) {
+      // Deselect filter mode → back to default
+      setFilterMode(null);
+      setSelectedCategory(null);
+      setSelectedEvenement(null);
+      setSelectedSaison(null);
+      setSelectedAttraction(null);
+      setExpandedEventGroup(null);
+    } else {
+      setFilterMode(mode);
+      // Reset sub-selections
+      setSelectedCategory(null);
+      setSelectedEvenement(null);
+      setSelectedSaison(null);
+      setSelectedAttraction(null);
+      setExpandedEventGroup(null);
+    }
+  };
 
   const filterModes: { key: FilterMode; label: string }[] = [
     { key: "categorie", label: "Par catégorie" },
@@ -166,12 +205,26 @@ const Hotels = () => {
   ];
 
   const getTitle = () => {
-    if (filterMode === "categorie") return `Liste des ${selectedCategory}`;
-    if (filterMode === "evenement") return selectedEvenement ? `Logements près : ${selectedEvenement}` : "Sélectionnez un événement";
-    if (filterMode === "saison") return selectedSaison ? `Logements en ${selectedSaison}` : "Sélectionnez une saison";
-    if (filterMode === "attraction") return selectedAttraction ? `Logements près : ${selectedAttraction}` : "Sélectionnez une attraction";
-    return "Logements";
+    if (filterMode === "categorie" && selectedCategory) return `Liste des ${selectedCategory}`;
+    if (filterMode === "evenement") {
+      if (selectedEvenement) return `Logements près : ${selectedEvenement}`;
+      return "Sélectionnez un événement";
+    }
+    if (filterMode === "saison") {
+      if (selectedSaison) return `Logements en ${selectedSaison}`;
+      return "Sélectionnez une saison";
+    }
+    if (filterMode === "attraction") {
+      if (selectedAttraction) return `Logements près : ${selectedAttraction}`;
+      return "Sélectionnez une attraction";
+    }
+    return "Tous les logements (A-Z)";
   };
+
+  // For event filter: show all events from all groups in a flat list for selection
+  const allEvenementsList = Object.entries(evenements).flatMap(([group, items]) =>
+    items.map(item => ({ group, nom: item }))
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -188,7 +241,7 @@ const Hotels = () => {
               {filterModes.map((mode) => (
                 <button
                   key={mode.key}
-                  onClick={() => setFilterMode(mode.key)}
+                  onClick={() => handleFilterMode(mode.key)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                     filterMode === mode.key
                       ? "bg-primary/10 text-primary font-semibold border border-primary/30"
@@ -201,98 +254,100 @@ const Hotels = () => {
             </div>
           </div>
 
-          <div className="border-t border-border pt-4">
-            {filterMode === "categorie" && (
-              <div className="space-y-1">
-                <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Catégories</h4>
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      selectedCategory === cat
-                        ? "bg-primary text-primary-foreground font-semibold"
-                        : "hover:bg-muted text-foreground"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {filterMode === "evenement" && (
-              <div className="space-y-1">
-                <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Événements à proximité</h4>
-                {Object.entries(evenements).map(([group, items]) => (
-                  <div key={group}>
+          {filterMode && (
+            <div className="border-t border-border pt-4">
+              {filterMode === "categorie" && (
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Catégories</h4>
+                  {categories.map((cat) => (
                     <button
-                      onClick={() => setExpandedEventGroup(expandedEventGroup === group ? null : group)}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted text-foreground transition-colors"
+                      key={cat}
+                      onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        selectedCategory === cat
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "hover:bg-muted text-foreground"
+                      }`}
                     >
-                      {group}
-                      {expandedEventGroup === group ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      {cat}
                     </button>
-                    {expandedEventGroup === group && (
-                      <div className="ml-3 space-y-0.5">
-                        {items.map((evt) => (
-                          <button
-                            key={evt}
-                            onClick={() => setSelectedEvenement(evt)}
-                            className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                              selectedEvenement === evt
-                                ? "bg-primary text-primary-foreground font-semibold"
-                                : "hover:bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            {evt}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {filterMode === "saison" && (
-              <div className="space-y-1">
-                <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Saisons</h4>
-                {saisons.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSelectedSaison(s)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      selectedSaison === s
-                        ? "bg-primary text-primary-foreground font-semibold"
-                        : "hover:bg-muted text-foreground"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            )}
+              {filterMode === "evenement" && (
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Événements à proximité</h4>
+                  {Object.entries(evenements).map(([group, items]) => (
+                    <div key={group}>
+                      <button
+                        onClick={() => setExpandedEventGroup(expandedEventGroup === group ? null : group)}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted text-foreground transition-colors"
+                      >
+                        {group}
+                        {expandedEventGroup === group ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      </button>
+                      {expandedEventGroup === group && (
+                        <div className="ml-3 space-y-0.5">
+                          {items.map((evt) => (
+                            <button
+                              key={evt}
+                              onClick={() => setSelectedEvenement(selectedEvenement === evt ? null : evt)}
+                              className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                                selectedEvenement === evt
+                                  ? "bg-primary text-primary-foreground font-semibold"
+                                  : "hover:bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {evt}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            {filterMode === "attraction" && (
-              <div className="space-y-1">
-                <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Attractions à proximité</h4>
-                {attractionsProximite.map((a) => (
-                  <button
-                    key={a}
-                    onClick={() => setSelectedAttraction(a)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      selectedAttraction === a
-                        ? "bg-primary text-primary-foreground font-semibold"
-                        : "hover:bg-muted text-foreground"
-                    }`}
-                  >
-                    {a}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              {filterMode === "saison" && (
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Saisons</h4>
+                  {saisons.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSelectedSaison(selectedSaison === s ? null : s)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        selectedSaison === s
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "hover:bg-muted text-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {filterMode === "attraction" && (
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Attractions à proximité</h4>
+                  {attractionsProximite.map((a) => (
+                    <button
+                      key={a}
+                      onClick={() => setSelectedAttraction(selectedAttraction === a ? null : a)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        selectedAttraction === a
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "hover:bg-muted text-foreground"
+                      }`}
+                    >
+                      {a}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </aside>
 
         {/* Content */}

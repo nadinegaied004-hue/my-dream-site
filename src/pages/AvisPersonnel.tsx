@@ -74,9 +74,9 @@ const AvisPersonnel = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-10">
-        <h2 className="section-title text-center mb-2">Mon espace avis</h2>
+        <h2 className="section-title text-center mb-2">Mon espace avis — Historique</h2>
         <p className="text-muted-foreground text-center mb-8">
-          Veuillez répondre avec toute transparence. Votre identité ne sera pas révélée.
+          Veuillez répondre avec toute transparence.
         </p>
 
         {/* Tabs */}
