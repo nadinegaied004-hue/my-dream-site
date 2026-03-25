@@ -380,7 +380,8 @@ const Hotels = () => {
     : null;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col justify-between">
+      <div>
       <Navbar />
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Sidebar */}
@@ -797,6 +798,7 @@ const Hotels = () => {
           </div>
         </div>
       )}
+      </div>
 
       <Footer />
     </div>
