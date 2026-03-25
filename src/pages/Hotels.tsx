@@ -416,7 +416,7 @@ const Hotels = () => {
           </div>
 
           {filterMode && (
-            <div className="border-t border-border pt-4">
+            <div className="border-t border-gray-300 pt-3">
               {filterMode === "categorie" && (
                 <div className="space-y-1">
                   <h4 className="text-xs font-medium text-gray-600 mb-1">Catégories</h4>
@@ -437,7 +437,7 @@ const Hotels = () => {
               )}
 
               {filterMode === "evenement" && (
-                <div className="space-y-1">
+                <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
                   <h4 className="text-xs font-medium text-gray-600 mb-1">Événements à proximité</h4>
                   {Object.entries(evenements).map(([group, items]) => (
                     <div key={group}>
@@ -471,7 +471,7 @@ const Hotels = () => {
               )}
 
               {filterMode === "saison" && (
-                <div className="space-y-1">
+                <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
                   <h4 className="text-xs font-medium text-gray-600 mb-1">Saisons</h4>
                   {saisons.map((s) => (
                     <button
@@ -490,7 +490,7 @@ const Hotels = () => {
               )}
 
               {filterMode === "attraction" && (
-                <div className="space-y-1">
+                <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
                   <h4 className="text-xs font-medium text-gray-600 mb-1">Attractions à proximité</h4>
                   {attractionsProximite.map((a) => (
                     <button
