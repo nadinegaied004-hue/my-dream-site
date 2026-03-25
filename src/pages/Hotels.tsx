@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Search, Filter, ChevronDown, ChevronRight, CalendarDays, MapPin, Info, X, MessageSquare, Plus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -305,6 +305,7 @@ const Hotels = () => {
   const [detailPopup, setDetailPopup] = useState<{ type: "evenement" | "attraction"; nom: string } | null>(null);
   const [recommendPopup, setRecommendPopup] = useState<{ hotelId: number; nom: string } | null>(null);
   const [recommendation, setRecommendation] = useState({ attraction: "", evenement: "", details: "" });
+  const [expandedLodging, setExpandedLodging] = useState<number | null>(null);
 
   const filtered = useMemo(() => {
     let results = mockLogements;
@@ -383,7 +384,7 @@ const Hotels = () => {
       <Navbar />
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Sidebar */}
-        <aside className="w-full md:w-72 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
+        <aside className="w-full md:w-1/3 lg:w-1/4 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
           <div>
             <h3 className="font-display font-semibold text-lg mb-3 flex items-center gap-2">
               <Filter size={18} className="text-primary" />
@@ -522,10 +523,8 @@ const Hotels = () => {
             <table className="hotel-table w-full">
               <thead>
                 <tr>
-                  <th>Photo</th>
                   <th>Nom</th>
-                  <th>Description</th>
-                  <th>Motivation</th>
+                  <th>Catégorie</th>
                   <th>Propriétaire</th>
                   <th>Adresse (coordonnées)</th>
                   <th>Calendrier</th>
@@ -546,17 +545,21 @@ const Hotels = () => {
                   </tr>
                 ) : (
                   filtered.map((hotel) => (
-                    <tr key={hotel.id}>
+                    <React.Fragment key={hotel.id}>
+                    <tr>
                       <td>
-                        <img 
-                          src={hotel.image} 
-                          alt={hotel.nom}
-                          className="w-20 h-14 object-cover rounded"
-                        />
+                        <button
+                          onClick={() => setExpandedLodging(expandedLodging === hotel.id ? null : hotel.id)}
+                          className="font-semibold whitespace-nowrap text-primary hover:underline"
+                        >
+                          {hotel.nom}
+                        </button>
                       </td>
-                      <td className="font-semibold whitespace-nowrap">{hotel.nom}</td>
-                      <td className="text-xs text-muted-foreground max-w-xs">{hotel.description}</td>
-                      <td className="text-xs text-muted-foreground max-w-xs">{hotel.motivation}</td>
+                      <td>
+                        <span className="px-2 py-1 rounded-full text-xs bg-accent text-accent-foreground">
+                          {hotel.categorie}
+                        </span>
+                      </td>
                       <td className="text-muted-foreground whitespace-nowrap">{hotel.proprietaire}</td>
                       <td className="text-muted-foreground font-mono text-xs whitespace-nowrap">
                         <a
@@ -658,7 +661,27 @@ const Hotels = () => {
                         </button>
                       </td>
                     </tr>
-                  ))
+                    {expandedLodging === hotel.id && (
+                      <tr key={`${hotel.id}-details`}>
+                        <td colSpan={11} className="p-4 bg-muted/30">
+                          <div className="flex gap-6">
+                            <img 
+                              src={hotel.image} 
+                              alt={hotel.nom}
+                              className="w-48 h-32 object-cover rounded-lg"
+                            />
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-2">Description</h4>
+                              <p className="text-sm text-muted-foreground mb-3">{hotel.description}</p>
+                              <h4 className="font-semibold mb-2">Pourquoi choisir ce logement ?</h4>
+                              <p className="text-sm text-muted-foreground">{hotel.motivation}</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))
                 )}
               </tbody>
             </table>
