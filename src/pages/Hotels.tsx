@@ -388,10 +388,10 @@ const Hotels = () => {
           <div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="w-full flex items-center justify-between gap-1 text-sm hover:text-pink-400 transition-colors dark:hover:text-pink-300"
+              className="w-full flex items-center justify-between gap-1 text-sm hover:text-primary transition-colors"
             >
               <span className="flex items-center gap-2">
-                <Filter size={16} className="text-pink-400 dark:text-pink-300" />
+                <Filter size={16} className="text-primary" />
                 Trier par
               </span>
               <span>{showFilters ? "▲" : "▼"}</span>
