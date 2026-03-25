@@ -127,6 +127,7 @@ const NoteBar = ({ note }: { note: number }) => {
 const Avis = () => {
   const [searchParams] = useSearchParams();
   const typeFilter = searchParams.get("type");
+  const logementFilter = searchParams.get("logement");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(typeFilter);
 
   const filteredReviews = useMemo(() => {
@@ -134,12 +135,15 @@ const Avis = () => {
     if (selectedCategory) {
       results = results.filter(r => r.typeLogement === selectedCategory);
     }
+    if (logementFilter) {
+      results = results.filter(r => r.lieu && r.lieu.toLowerCase().includes(logementFilter.toLowerCase()));
+    }
     return [...results].sort((a, b) => {
       const catCompare = (a.typeLogement || "").localeCompare(b.typeLogement || "", "fr");
       if (catCompare !== 0) return catCompare;
       return (a.nom || "").localeCompare(b.nom || "", "fr");
     });
-  }, [selectedCategory]);
+  }, [selectedCategory, logementFilter]);
 
   return (
     <div className="min-h-screen flex flex-col">

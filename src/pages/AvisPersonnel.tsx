@@ -121,23 +121,12 @@ const AvisPersonnel = () => {
           Veuillez répondre avec toute transparence.
         </p>
 
-        {/* Tabs */}
+        {/* Tabs - Logement only */}
         <div className="flex gap-2 mb-6 justify-center">
           <button
-            onClick={() => { setActiveTab("logement"); setSelectedEvenement(null); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "logement" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/80"
-            }`}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground"
           >
             Avis sur un logement
-          </button>
-          <button
-            onClick={() => { setActiveTab("evenement"); setSelectedReservation(null); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "evenement" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/80"
-            }`}
-          >
-            Avis sur un événement
           </button>
         </div>
 

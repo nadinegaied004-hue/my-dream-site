@@ -653,7 +653,7 @@ const Hotels = () => {
                       <td className="text-muted-foreground">{hotel.avis}</td>
                       <td>
                         <Link
-                          to={`/avis?type=${encodeURIComponent(hotel.categorie)}`}
+                          to={`/avis?type=${encodeURIComponent(hotel.categorie)}&logement=${encodeURIComponent(hotel.nom)}`}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                         >
                           <MessageSquare size={12} />

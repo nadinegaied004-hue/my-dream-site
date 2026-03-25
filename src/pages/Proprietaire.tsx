@@ -4,15 +4,12 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Proprietaire = () => {
-  const [photos, setPhotos] = useState<string[]>(["facade.jpg", "chambre1.jpg"]);
-  const [annonces, setAnnonces] = useState([
-    { id: 1, titre: "Soirée musique live", date: "15/04/2026" },
-    { id: 2, titre: "Projection film en plein air", date: "22/04/2026" },
-  ]);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [annonces, setAnnonces] = useState<{ id: number; titre: string; date: string }[]>([]);
   const [nouvelleAnnonce, setNouvelleAnnonce] = useState({ titre: "", date: "" });
-  const [promo, setPromo] = useState({ pourcentage: "15", dateDebut: "", dateFin: "" });
-  const [celebrites, setCelebrites] = useState("Ahmed Soultan, Saad Lamjarred");
-  const [renovations, setRenovations] = useState("Piscine rénovée en Janvier 2026");
+  const [promo, setPromo] = useState({ pourcentage: "", dateDebut: "", dateFin: "" });
+  const [celebrites, setCelebrites] = useState("");
+  const [renovations, setRenovations] = useState("");
 
   const handleAddPhoto = () => {
     setPhotos([...photos, `photo_${photos.length + 1}.jpg`]);
