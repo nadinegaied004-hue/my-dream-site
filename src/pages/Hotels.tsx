@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { Search, Filter, ChevronDown, ChevronRight, CalendarDays, MapPin, Info, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Search, Filter, ChevronDown, ChevronRight, CalendarDays, MapPin, Info, X, MessageSquare } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Navbar from "@/components/Navbar";
@@ -266,6 +267,8 @@ const Hotels = () => {
   const [expandedEventGroup, setExpandedEventGroup] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [detailPopup, setDetailPopup] = useState<{ type: "evenement" | "attraction"; nom: string } | null>(null);
+  const [recommendPopup, setRecommendPopup] = useState<{ hotelId: number; nom: string } | null>(null);
+  const [recommendation, setRecommendation] = useState({ attraction: "", evenement: "", details: "" });
 
   const filtered = useMemo(() => {
     let results = mockLogements;
@@ -491,6 +494,8 @@ const Hotels = () => {
                   <th>Saison</th>
                   <th>Attractions (dist.)</th>
                   <th>Nb. Avis</th>
+                  <th>Avis</th>
+                  <th>Recommander</th>
                 </tr>
               </thead>
               <tbody>
@@ -586,6 +591,24 @@ const Hotels = () => {
                         </div>
                       </td>
                       <td className="text-muted-foreground">{hotel.avis}</td>
+                      <td>
+                        <Link
+                          to={`/avis?type=${encodeURIComponent(hotel.categorie)}`}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                        >
+                          <MessageSquare size={12} />
+                          Voir les avis
+                        </Link>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => setRecommendPopup({ hotelId: hotel.id, nom: hotel.nom })}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
+                        >
+                          <Plus size={12} />
+                          Ajouter
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -638,6 +661,59 @@ const Hotels = () => {
                   <span><strong>Prix :</strong> {(detail as any).prix}</span>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recommendation popup */}
+      {recommendPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setRecommendPopup(null)}>
+          <div
+            className="bg-background rounded-xl border border-border shadow-xl max-w-lg w-full mx-4 p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button onClick={() => setRecommendPopup(null)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+              <X size={20} />
+            </button>
+            <h3 className="font-display text-xl font-semibold mb-3 pr-8">Recommander pour {recommendPopup.nom}</h3>
+            <p className="text-sm text-muted-foreground mb-4">Partagez vos recommandations d'attractions et événements à proximité de ce logement.</p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium block mb-1">Attraction recommandée :</label>
+                <input
+                  type="text"
+                  value={recommendation.attraction}
+                  onChange={(e) => setRecommendation({...recommendation, attraction: e.target.value})}
+                  className="input-field"
+                  placeholder="Nom de l'attraction..."
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium block mb-1">Événement recommandé :</label>
+                <input
+                  type="text"
+                  value={recommendation.evenement}
+                  onChange={(e) => setRecommendation({...recommendation, evenement: e.target.value})}
+                  className="input-field"
+                  placeholder="Nom de l'événement..."
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium block mb-1">Détails :</label>
+                <textarea
+                  value={recommendation.details}
+                  onChange={(e) => setRecommendation({...recommendation, details: e.target.value})}
+                  className="input-field min-h-[80px]"
+                  placeholder="Pourquoi recommandez-vous cet endroit/événement..."
+                />
+              </div>
+              <button
+                onClick={() => { alert("Merci ! Votre recommandation a été enregistrée."); setRecommendPopup(null); setRecommendation({ attraction: "", evenement: "", details: "" }); }}
+                className="w-full btn-primary"
+              >
+                Enregistrer la recommandation
+              </button>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
-import { Star } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Star, MapPin, Filter } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,56 +25,84 @@ const mockReviews = [
     noteSur20: calculerNoteSur20({ positives: 8, total: 9, aCommentaire: true, nbPhotos: 2 }),
     avis: "Excellent séjour à Hammamet ! L'hôtel était impeccable et le personnel très accueillant.",
     date: "12 Mars 2026", photo: null, reduction: 0,
+    lieu: "Hôtel El Mouradi Hammamet, Hammamet, Nabeul, Tunisia",
+    typeLogement: "Hôtel",
   },
   {
     id: 2, nomComplet: "Sarah Mansouri", note: 4,
     noteSur20: calculerNoteSur20({ positives: 7, total: 9, aCommentaire: true, nbPhotos: 1 }),
     avis: "Très bon logement à Sidi Bou Saïd, propre et bien situé. Je recommande vivement.",
     date: "8 Mars 2026", photo: null, reduction: 0,
+    lieu: "Maison Sidi Bou Saïd, Sidi Bou Saïd, Tunis, Tunisia",
+    typeLogement: "Maison",
   },
   {
     id: 3, nomComplet: "Youssef Hammami", note: 5,
     noteSur20: calculerNoteSur20({ positives: 9, total: 9, aCommentaire: true, nbPhotos: 3 }),
     avis: "Une expérience inoubliable à Djerba. Le service était au top niveau.",
     date: "5 Mars 2026", photo: null, reduction: 0,
+    lieu: "Villa Djerba Heritage, Djerba, Medenine, Tunisia",
+    typeLogement: "Maison",
   },
   {
     id: 4, nomComplet: "Fatima Trabelsi", note: 3,
     noteSur20: calculerNoteSur20({ positives: 5, total: 9, aCommentaire: true, nbPhotos: 0 }),
     avis: "Correct dans l'ensemble, mais la localisation à Sousse pourrait être meilleure.",
     date: "1 Mars 2026", photo: null, reduction: 0,
+    lieu: "Hôtel Sheraton Sousse, Sousse, Sousse, Tunisia",
+    typeLogement: "Hôtel",
   },
   {
     id: 5, nomComplet: "Omar Khelifi", note: 5,
     noteSur20: calculerNoteSur20({ positives: 8, total: 9, aCommentaire: true, nbPhotos: 2 }),
     avis: "Parfait pour un séjour en famille à Tozeur. Les enfants ont adoré.",
     date: "25 Fév 2026", photo: null, reduction: 0,
+    lieu: "Dar Essalem Tozeur, Tozeur, Tozeur, Tunisia",
+    typeLogement: "Maison d'hôtes",
   },
   {
     id: 6, nomComplet: "Amina Cherif", note: 4,
     noteSur20: calculerNoteSur20({ positives: 7, total: 9, aCommentaire: false, nbPhotos: 1 }),
     avis: "Bon rapport qualité/prix à Zaghouan. L'accueil était chaleureux.",
     date: "20 Fév 2026", photo: null, reduction: 0,
+    lieu: "Dar Zaghouan, Zaghouan, Zaghouan, Tunisia",
+    typeLogement: "Maison d'hôtes",
   },
   {
     id: 7, nomComplet: "Karim Gharbi", note: 4,
     noteSur20: calculerNoteSur20({ positives: 7, total: 9, aCommentaire: true, nbPhotos: 0 }),
     avis: "Belle vue sur la Médina de Tunis, chambres spacieuses. Un petit déjeuner copieux.",
     date: "15 Fév 2026", photo: null, reduction: 0,
+    lieu: "Hôtel Laico Tunis, Tunis, Tunisia",
+    typeLogement: "Hôtel",
   },
   {
     id: 8, nomComplet: "Nadia Bouzid", note: 5,
     noteSur20: calculerNoteSur20({ positives: 9, total: 9, aCommentaire: true, nbPhotos: 2 }),
     avis: "Je reviens chaque année à Sidi Bou Saïd et je ne suis jamais déçue !",
     date: "10 Fév 2026", photo: null, reduction: 0,
+    lieu: "Maison Sidi Bou Saïd, Sidi Bou Saïd, Tunis, Tunisia",
+    typeLogement: "Maison",
   },
   {
     id: 9, nomComplet: "Rachid Sassi", note: 3,
     noteSur20: calculerNoteSur20({ positives: 4, total: 9, aCommentaire: true, nbPhotos: 0 }),
     avis: "Séjour agréable à Testour mais quelques améliorations à apporter.",
     date: "5 Fév 2026", photo: null, reduction: 0,
+    lieu: "Ferme Bio Testour, Testour, Béja, Tunisia",
+    typeLogement: "Ferme",
+  },
+  {
+    id: 10, nomComplet: "Leila Bouazizi", note: 4,
+    noteSur20: calculerNoteSur20({ positives: 7, total: 9, aCommentaire: true, nbPhotos: 1 }),
+    avis: "Séjour parfait dans cette ferme oleicole. Le calme et la nature au rendez-vous.",
+    date: "28 Jan 2026", photo: null, reduction: 0,
+    lieu: "Ferme Oléicole Sfax, Sfax, Sfax, Tunisia",
+    typeLogement: "Ferme",
   },
 ].map(r => ({ ...r, reduction: calculerReduction(r.noteSur20) }));
+
+const categories = ["Hôtel", "Maison", "Maison d'hôtes", "Ferme"];
 
 const Stars = ({ count }: { count: number }) => (
   <div className="flex gap-0.5">
@@ -95,56 +124,104 @@ const NoteBar = ({ note }: { note: number }) => {
   );
 };
 
-const Avis = () => (
-  <div className="min-h-screen flex flex-col">
-    <Navbar />
-    <main className="flex-1 container mx-auto px-4 py-10">
-      <h2 className="section-title text-center mb-2">Les avis des clients</h2>
-      <p className="text-muted-foreground text-center mb-10">Découvrez ce que nos visiteurs pensent</p>
+const Avis = () => {
+  const [searchParams] = useSearchParams();
+  const typeFilter = searchParams.get("type");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(typeFilter);
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        {mockReviews.map((r) => (
-          <div key={r.id} className="review-card flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-                  {r.nomComplet.split(" ").map(n => n[0]).join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <span className="font-semibold block">{r.nomComplet}</span>
-                <Stars count={r.note} />
+  const filteredReviews = useMemo(() => {
+    let results = [...mockReviews];
+    if (selectedCategory) {
+      results = results.filter(r => r.typeLogement === selectedCategory);
+    }
+    return [...results].sort((a, b) => {
+      const catCompare = a.typeLogement.localeCompare(b.typeLogement, "fr");
+      if (catCompare !== 0) return catCompare;
+      return a.nom.localeCompare(b.nom, "fr");
+    });
+  }, [selectedCategory]);
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1 container mx-auto px-4 py-10">
+        <h2 className="section-title text-center mb-2">Les avis des clients</h2>
+        <p className="text-muted-foreground text-center mb-6">Découvrez ce que nos visiteurs pensent</p>
+
+        {/* Filter by housing type */}
+        <div className="flex flex-wrap gap-2 justify-center mb-8">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              selectedCategory === null ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/80"
+            }`}
+          >
+            Tous
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                selectedCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/80"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {filteredReviews.map((r) => (
+            <div key={r.id} className="review-card flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                    {r.nomComplet.split(" ").map(n => n[0]).join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <span className="font-semibold block">{r.nomComplet}</span>
+                  <Stars count={r.note} />
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin size={12} className="text-primary shrink-0" />
+                <span>{r.lieu}</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs">
+                <span className="px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{r.typeLogement}</span>
+              </div>
+              <NoteBar note={r.noteSur20} />
+              <p className="text-sm text-muted-foreground flex-1">{r.avis}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground/60">{r.date}</span>
+                {r.reduction > 0 && (
+                  <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+                    -{r.reduction}% obtenu
+                  </span>
+                )}
               </div>
             </div>
-            <NoteBar note={r.noteSur20} />
-            <p className="text-sm text-muted-foreground flex-1">{r.avis}</p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground/60">{r.date}</span>
-              {r.reduction > 0 && (
-                <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
-                  -{r.reduction}% obtenu
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div className="auth-container text-center">
-        <h3 className="font-display text-xl font-semibold mb-4">Veuillez entrer votre avis</h3>
-        <p className="text-muted-foreground mb-6">
-          Sélectionnez le logement ou l'événement sur lequel vous voulez donner votre avis
-        </p>
-        <Link
-          to="/avis-personnel"
-          className="btn-primary inline-flex items-center gap-2"
-        >
-          Accéder à mon historique de réservations
-        </Link>
-      </div>
-    </main>
-    <Footer />
-  </div>
-);
+        <div className="auth-container text-center">
+          <h3 className="font-display text-xl font-semibold mb-4">Veuillez entrer votre avis</h3>
+          <p className="text-muted-foreground mb-6">
+            Sélectionnez le logement ou l'événement sur lequel vous voulez donner votre avis
+          </p>
+          <Link
+            to="/avis-personnel"
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            Accéder à mon historique de réservations
+          </Link>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+};
 
 export default Avis;

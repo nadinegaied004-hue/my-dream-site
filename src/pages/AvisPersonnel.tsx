@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Star, Camera, CheckCircle, Send, Gift } from "lucide-react";
+import { Star, Camera, CheckCircle, Send, Gift, Plus, X, MapPin, Calendar } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const mockReservations = [
-  { id: 1, nomLog: "Hôtel El Mouradi Hammamet", periode: "3 nuits", dateDebut: "05/04/2026", avisEnvoye: true },
-  { id: 2, nomLog: "Résidence Marina Yasmine", periode: "5 nuits", dateDebut: "12/04/2026", avisEnvoye: false },
-  { id: 3, nomLog: "Dar El Jeld", periode: "2 nuits", dateDebut: "19/04/2026", avisEnvoye: false },
+  { id: 1, nomLog: "Hôtel El Mouradi Hammamet", periode: "3 nuits", dateDebut: "05/04/2026", dateFin: "08/04/2026", avisEnvoye: true, lieu: "Hammamet, Nabeul" },
+  { id: 2, nomLog: "Résidence Marina Yasmine", periode: "5 nuits", dateDebut: "12/04/2026", dateFin: "17/04/2026", avisEnvoye: false, lieu: "Hammamet, Nabeul" },
+  { id: 3, nomLog: "Dar El Jeld", periode: "2 nuits", dateDebut: "19/04/2026", dateFin: "21/04/2026", avisEnvoye: false, lieu: "Tunis, Tunisia" },
 ];
 
 const mockEvenements = [
@@ -57,6 +57,25 @@ const AvisPersonnel = () => {
   const [commentaire, setCommentaire] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [resultat, setResultat] = useState<{ note20: number; reduction: number } | null>(null);
+  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [recommendation, setRecommendation] = useState({ attraction: "", evenement: "", details: "" });
+
+  const isDuringStay = (dateDebut: string, dateFin: string) => {
+    const today = new Date();
+    const debut = new Date(dateDebut.split('/').reverse().join('-'));
+    const fin = new Date(dateFin.split('/').reverse().join('-'));
+    return today >= debut && today <= fin;
+  };
+
+  const isAfterStay = (dateFin: string) => {
+    const today = new Date();
+    const fin = new Date(dateFin.split('/').reverse().join('-'));
+    return today > fin;
+  };
+
+  const getSelectedReservationData = () => mockReservations.find(r => r.id === selectedReservation);
+  const selectedRes = getSelectedReservationData();
+  const canEdit = selectedRes ? !isAfterStay(selectedRes.dateFin) : true;
 
   const handleReponse = (id: string, val: boolean) => {
     setQuestions(questions.map(q => q.id === id ? { ...q, reponse: val } : q));
@@ -129,8 +148,9 @@ const AvisPersonnel = () => {
               <thead>
                 <tr>
                   <th>Nom du logement</th>
-                  <th>Période</th>
+                  <th>Durée</th>
                   <th>Date début</th>
+                  <th>Dates (début - fin)</th>
                   <th>Avis envoyé</th>
                   <th>Action</th>
                 </tr>
@@ -141,6 +161,7 @@ const AvisPersonnel = () => {
                     <td className="font-semibold">{r.nomLog}</td>
                     <td className="text-muted-foreground">{r.periode}</td>
                     <td className="text-muted-foreground">{r.dateDebut}</td>
+                    <td className="text-muted-foreground text-xs">{r.dateDebut} - {r.dateFin}</td>
                     <td>
                       {r.avisEnvoye ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
@@ -195,6 +216,14 @@ const AvisPersonnel = () => {
               <h3 className="font-display font-semibold text-lg mb-1">Questionnaire d'évaluation</h3>
               <p className="text-sm text-muted-foreground mb-6">⚠ Tous les champs sont obligatoires</p>
 
+              {!canEdit && (
+                <div className="mb-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
+                  <p className="text-sm text-orange-700 dark:text-orange-300">
+                    ⏰ Votre séjour est terminé. Vous pouvez uniquement visualiser ce formulaire mais vous ne pouvez plus le modifier.
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-4">
                 {questions.map((q) => (
                   <div key={q.id} className="flex items-center justify-between gap-4 py-2 border-b border-border last:border-0">
@@ -202,20 +231,26 @@ const AvisPersonnel = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleReponse(q.id, true)}
+                        disabled={!canEdit}
                         className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                           q.reponse === true
                             ? "bg-green-600 text-white"
-                            : "bg-muted text-foreground hover:bg-green-100"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-green-100"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                         }`}
                       >
                         Oui
                       </button>
                       <button
                         onClick={() => handleReponse(q.id, false)}
+                        disabled={!canEdit}
                         className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                           q.reponse === false
                             ? "bg-red-600 text-white"
-                            : "bg-muted text-foreground hover:bg-red-100"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-red-100"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                         }`}
                       >
                         Non
@@ -236,7 +271,12 @@ const AvisPersonnel = () => {
                 <h4 className="text-sm font-semibold mb-2">Si vous avez pris des photos :</h4>
                 <button
                   onClick={handlePhotoUpload}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                  disabled={!canEdit}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed text-sm transition-colors ${
+                    canEdit
+                      ? "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                      : "border-border text-muted-foreground/50 cursor-not-allowed"
+                  }`}
                 >
                   <Camera size={16} />
                   Télécharger des photos
@@ -256,9 +296,66 @@ const AvisPersonnel = () => {
                 <textarea
                   value={commentaire}
                   onChange={(e) => setCommentaire(e.target.value)}
-                  className="input-field min-h-[80px]"
+                  disabled={!canEdit}
+                  className={`input-field min-h-[80px] ${!canEdit ? "opacity-50 cursor-not-allowed" : ""}`}
                   placeholder="Partagez votre expérience..."
                 />
+              </div>
+
+              {/* Recommandations du client */}
+              <div className="mt-6 border-t border-border pt-6">
+                {canEdit && (
+                  <button
+                    onClick={() => setShowRecommendation(!showRecommendation)}
+                    className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+                  >
+                    <Plus size={16} />
+                    Ajouter une recommandation (attractions/événements à proximité)
+                  </button>
+                )}
+                
+                {showRecommendation && (
+                  <div className="mt-4 p-4 rounded-lg bg-muted/50 space-y-4">
+                    <div>
+                      <label className="text-sm font-medium block mb-1">Attraction recommandée :</label>
+                      <input
+                        type="text"
+                        value={recommendation.attraction}
+                        onChange={(e) => setRecommendation({...recommendation, attraction: e.target.value})}
+                        disabled={!canEdit}
+                        className="input-field"
+                        placeholder="Nom de l'attraction..."
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium block mb-1">Événement recommandé :</label>
+                      <input
+                        type="text"
+                        value={recommendation.evenement}
+                        onChange={(e) => setRecommendation({...recommendation, evenement: e.target.value})}
+                        disabled={!canEdit}
+                        className="input-field"
+                        placeholder="Nom de l'événement..."
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium block mb-1">Détails :</label>
+                      <textarea
+                        value={recommendation.details}
+                        onChange={(e) => setRecommendation({...recommendation, details: e.target.value})}
+                        disabled={!canEdit}
+                        className="input-field min-h-[60px]"
+                        placeholder="Pourquoi recommandez-vous cet endroit/événement..."
+                      />
+                    </div>
+                    <button
+                      onClick={() => setShowRecommendation(false)}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      <X size={14} className="inline mr-1" /> Masquer
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Note calculée */}
@@ -278,18 +375,45 @@ const AvisPersonnel = () => {
                 </div>
               )}
 
-              <button
-                onClick={handleSubmit}
-                disabled={!allAnswered}
-                className={`mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
-                  allAnswered
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "bg-muted text-muted-foreground cursor-not-allowed"
-                }`}
-              >
-                <Send size={16} />
-                Valider le formulaire
-              </button>
+              {/* Message des points cadeau */}
+              {allAnswered && (
+                <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                  <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
+                    <Gift size={16} />
+                    <span>En remplissant ce formulaire, vous pouvez profiter de <strong>{resultat ? resultat.reduction : 0}% de réduction</strong> sur votre prochaine réservation !</span>
+                  </p>
+                </div>
+              )}
+
+              <div className="flex items-center gap-4 mt-6">
+                {allAnswered && resultat && (
+                  <div className="flex-1 p-3 rounded-lg bg-primary/10 text-center">
+                    <p className="text-xs text-muted-foreground mb-1">Note du site</p>
+                    <div className="flex items-center justify-center gap-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          size={18}
+                          className={i < noteCalculee() ? "fill-primary text-primary" : "text-muted-foreground/30"}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm font-bold text-primary">{noteCalculee()}/5 ({resultat.note20}/20)</span>
+                  </div>
+                )}
+                <button
+                  onClick={handleSubmit}
+                  disabled={!allAnswered || !canEdit}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
+                    allAnswered && canEdit
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                  }`}
+                >
+                  <Send size={16} />
+                  {canEdit ? "Valider le formulaire" : "Formulaire verrouillé"}
+                </button>
+              </div>
             </div>
           </div>
         )}

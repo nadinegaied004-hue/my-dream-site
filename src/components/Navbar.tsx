@@ -4,7 +4,7 @@ import { Menu, X, Globe, Moon, Sun, Home } from "lucide-react";
 
 const navItems = [
   { label: "Accueil", path: "/" },
-  { label: "Types de logement", path: "/hotels" },
+  { label: "Logements", path: "/hotels" },
   { label: "Avis Clients", path: "/avis" },
   { label: "Avis Personnel", path: "/avis-personnel" },
   { label: "Sombre/Clair", path: "#theme" },
