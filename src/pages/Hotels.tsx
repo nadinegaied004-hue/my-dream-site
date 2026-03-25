@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Search, Filter, ChevronDown, ChevronRight, CalendarDays, MapPin, Info, X, MessageSquare } from "lucide-react";
+import { Search, Filter, ChevronDown, ChevronRight, CalendarDays, MapPin, Info, X, MessageSquare, Plus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Navbar from "@/components/Navbar";
