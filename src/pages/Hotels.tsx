@@ -419,7 +419,7 @@ const Hotels = () => {
             <div className="border-t border-gray-300 pt-3">
               {filterMode === "categorie" && (
                 <div className="space-y-1">
-                  <h4 className="text-xs font-medium mb-1">Catégories</h4>
+                  <h4 className="text-sm font-bold mb-2">Catégories</h4>
                   {categories.map((cat) => (
                     <button
                       key={cat}
@@ -438,7 +438,7 @@ const Hotels = () => {
 
               {filterMode === "evenement" && (
                 <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
-                  <h4 className="text-xs font-medium mb-1">Événements à proximité</h4>
+                  <h4 className="text-sm font-bold mb-2">Événements à proximité</h4>
                   {Object.entries(evenements).map(([group, items]) => (
                     <div key={group}>
                       <button
@@ -472,7 +472,7 @@ const Hotels = () => {
 
               {filterMode === "saison" && (
                 <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
-                  <h4 className="text-xs font-medium mb-1">Saisons</h4>
+                  <h4 className="text-sm font-bold mb-2">Saisons</h4>
                   {saisons.map((s) => (
                     <button
                       key={s}
@@ -491,7 +491,7 @@ const Hotels = () => {
 
               {filterMode === "attraction" && (
                 <div className="space-y-1 mt-3 pt-3 border-t border-gray-200">
-                  <h4 className="text-xs font-medium mb-1">Attractions à proximité</h4>
+                  <h4 className="text-sm font-bold mb-2">Attractions à proximité</h4>
                   {attractionsProximite.map((a) => (
                     <button
                       key={a}
