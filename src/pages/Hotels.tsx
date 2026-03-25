@@ -306,6 +306,7 @@ const Hotels = () => {
   const [recommendPopup, setRecommendPopup] = useState<{ hotelId: number; nom: string } | null>(null);
   const [recommendation, setRecommendation] = useState({ attraction: "", evenement: "", details: "" });
   const [expandedLodging, setExpandedLodging] = useState<number | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   const filtered = useMemo(() => {
     let results = mockLogements;
@@ -386,25 +387,33 @@ const Hotels = () => {
         {/* Sidebar */}
         <aside className="w-full md:w-56 lg:w-64 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
           <div>
-            <h3 className="font-display font-semibold text-lg mb-3 flex items-center gap-2">
-              <Filter size={18} className="text-primary" />
-              Type de tri
-            </h3>
-            <div className="space-y-1">
-              {filterModes.map((mode) => (
-                <button
-                  key={mode.key}
-                  onClick={() => handleFilterMode(mode.key)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                    filterMode === mode.key
-                      ? "bg-primary/10 text-primary font-semibold border border-primary/30"
-                      : "hover:bg-muted text-foreground"
-                  }`}
-                >
-                  {mode.label}
-                </button>
-              ))}
-            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="w-full font-display font-semibold text-lg mb-3 flex items-center justify-between gap-2 hover:text-primary transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Filter size={18} className="text-primary" />
+                Trier par
+              </span>
+              <span>{showFilters ? "▲" : "▼"}</span>
+            </button>
+            {showFilters && (
+              <div className="space-y-1">
+                {filterModes.map((mode) => (
+                  <button
+                    key={mode.key}
+                    onClick={() => handleFilterMode(mode.key)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                      filterMode === mode.key
+                        ? "bg-primary/10 text-primary font-semibold border border-primary/30"
+                        : "hover:bg-muted text-foreground"
+                    }`}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {filterMode && (
