@@ -385,7 +385,7 @@ const Hotels = () => {
       <Navbar />
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Sidebar */}
-        <aside className="w-full md:w-56 lg:w-64 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
+        <aside className="w-full md:w-40 lg:w-48 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
           <div>
             <button
               onClick={() => setShowFilters(!showFilters)}
