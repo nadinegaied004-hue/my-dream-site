@@ -594,7 +594,7 @@ const Hotels = () => {
                                 <span>Logement disponible</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-orange-500 inline-block" />
+                                <span className="w-3 h-3 rounded-full bg-amber-600 inline-block" />
                                 <span>Événement à proximité</span>
                               </div>
                             </div>
@@ -608,7 +608,7 @@ const Hotels = () => {
                               }}
                               modifiersStyles={{
                                 disponible: { backgroundColor: "hsl(142 71% 45%)", color: "white", borderRadius: "9999px" },
-                                evenement: { backgroundColor: "hsl(25 95% 53%)", color: "white", borderRadius: "9999px" },
+                                evenement: { backgroundColor: "hsl(35 60% 45%)", color: "white", borderRadius: "9999px" },
                               }}
                             />
                           </PopoverContent>
