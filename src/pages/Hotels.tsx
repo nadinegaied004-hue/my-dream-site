@@ -149,7 +149,7 @@ type FilterMode = "categorie" | "evenement" | "saison" | "attraction";
 const mockLogements = [
   {
     id: 1, nom: "Hôtel El Mouradi Hammamet", lat: 36.4000, lng: 10.6167, proprietaire: "Ahmed Ben Salah",
-    description: "Hôtel 5 étoiles avec vue sur mer, piscines, spa et restaurant gastronomique. Situé au cœur de la station balnéaire de Hammamet.",
+    description: "Hôtel 5 étoiles avec vue sur mer, piscines, spa et restaurant gastronomique. 250 chambres et suites spacieuses avec balcon.",
     motivation: "Proximité de la plage et des monuments historiques de Hammamet. Idéal pour les familles et couples.",
     datesDisponibles: [new Date(2026, 3, 5), new Date(2026, 3, 10), new Date(2026, 3, 15), new Date(2026, 4, 1), new Date(2026, 4, 12)],
     datesEvenements: [new Date(2026, 3, 8), new Date(2026, 4, 20)],
@@ -161,7 +161,7 @@ const mockLogements = [
   },
   {
     id: 2, nom: "Hôtel Laico Tunis", lat: 36.8065, lng: 10.1815, proprietaire: "Fatima Trabelsi",
-    description: "Hôtel moderne au centre-ville de Tunis, proche des ministères et ambassades. Chambres spacieuses et business center.",
+    description: "Hôtel moderne au centre-ville de Tunis, proche des ministères et ambassades. 180 chambres spacieuses et business center.",
     motivation: "Accès facile aux transports et proximité de la médina de Tunis. Parfait pour les voyages d'affaires.",
     datesDisponibles: [new Date(2026, 3, 2), new Date(2026, 3, 18), new Date(2026, 4, 5)],
     datesEvenements: [new Date(2026, 3, 14)],
@@ -173,7 +173,7 @@ const mockLogements = [
   },
   {
     id: 3, nom: "Hôtel Sheraton Sousse", lat: 35.8256, lng: 10.6369, proprietaire: "Karim Gharbi",
-    description: "Hôtel de luxe en front de mer à Sousse. Accès privé à la plage, piscine olimpique et animations nocturnes.",
+    description: "Hôtel de luxe en front de mer à Sousse. Accès privé à la plage, piscine olimpique et 320 chambres avec vue sur mer.",
     motivation: "Idéal pour les amateurs de sports nautiques et la vie nocturne de Sousse. Réservation early bird disponible.",
     datesDisponibles: [new Date(2026, 4, 3), new Date(2026, 4, 20)],
     datesEvenements: [new Date(2026, 3, 25), new Date(2026, 4, 10)],
@@ -185,7 +185,7 @@ const mockLogements = [
   },
   {
     id: 4, nom: "Maison Sidi Bou Saïd", lat: 36.8687, lng: 10.3497, proprietaire: "Nadia Bouzid",
-    description: "Maison traditionnelle bleue et blanche avec vue panoramique sur la mer. Terrasse privée et décoration authentique tunisienne.",
+    description: "Maison traditionnelle bleue et blanche avec vue panoramique sur la mer. Terrasse privée et décoration authentique tunisienne. 4 chambres.",
     motivation: "Cadre romantique parfait pour les couples. À distance de marche de la célèbre colline de Sidi Bou Saïd.",
     datesDisponibles: [new Date(2026, 3, 1), new Date(2026, 3, 7), new Date(2026, 3, 22), new Date(2026, 4, 8)],
     datesEvenements: [new Date(2026, 3, 12)],
@@ -197,7 +197,7 @@ const mockLogements = [
   },
   {
     id: 5, nom: "Résidence Marina Yasmine", lat: 36.3833, lng: 10.5500, proprietaire: "Youssef Hammami",
-    description: "Résidence de charme avec jardin et piscine privée. Proche du port de Yasmine Hammamet et des restaurants.",
+    description: "Résidence de charme avec jardin et piscine privée. Proche du port de Yasmine Hammamet et des restaurants. 6 chambres.",
     motivation: "Parfait pour les familles nombreuses. Cuisine équipée et espace de vie spacieux.",
     datesDisponibles: [new Date(2026, 3, 4), new Date(2026, 3, 11), new Date(2026, 4, 2), new Date(2026, 4, 15)],
     datesEvenements: [new Date(2026, 4, 5)],
@@ -209,7 +209,7 @@ const mockLogements = [
   },
   {
     id: 6, nom: "Villa Djerba Heritage", lat: 33.8076, lng: 10.8451, proprietaire: "Samira Jlassi",
-    description: "Villa de luxe avec piscine à Djerba. Architecture traditionnellemerge avec modernité. Plage privée à 5 minutes.",
+    description: "Villa de luxe avec piscine à Djerba. Architecture traditionnellemerge avec modernité. Plage privée à 5 minutes. 5 chambres.",
     motivation: "Destination prisée pour les lune de miel. Séjour tout inclus disponible.",
     datesDisponibles: [new Date(2026, 5, 1), new Date(2026, 5, 15)],
     datesEvenements: [new Date(2026, 5, 10)],
@@ -221,7 +221,7 @@ const mockLogements = [
   },
   {
     id: 7, nom: "Dar El Jeld", lat: 36.7994, lng: 10.1712, proprietaire: "Hassan Meddeb",
-    description: "Maison d'hôtes de caractère dans la médina de Tunis. Patio intérieur, chambres décorées avec des éléments traditionnels.",
+    description: "Maison d'hôtes de caractère dans la médina de Tunis. Patio intérieur, chambres décorées avec des éléments traditionnels. 8 chambres.",
     motivation: "Immersion totale dans la culture tunisienne. Petit-déjeuner traditionnel inclus.",
     datesDisponibles: [new Date(2026, 3, 3), new Date(2026, 3, 19), new Date(2026, 4, 7)],
     datesEvenements: [new Date(2026, 3, 20)],
@@ -233,7 +233,7 @@ const mockLogements = [
   },
   {
     id: 8, nom: "Dar Zaghouan", lat: 36.4025, lng: 10.1427, proprietaire: "Amina Cherif",
-    description: "Maison d'hôtes campagne aux pieds des montagnes de Zaghouan. Air pur,randonnées et détente garantis.",
+    description: "Maison d'hôtes campagne aux pieds des montagnes de Zaghouan. Air pur,randonnées et détente garantis. 5 chambres.",
     motivation: "Échappez au stress de la ville. Idéal pour les amateurs de nature et d'histoire.",
     datesDisponibles: [new Date(2026, 4, 10), new Date(2026, 4, 25)],
     datesEvenements: [new Date(2026, 4, 18)],
@@ -245,7 +245,7 @@ const mockLogements = [
   },
   {
     id: 9, nom: "Dar Essalem Tozeur", lat: 33.9197, lng: 8.1335, proprietaire: "Omar Khelifi",
-    description: "Maison d'hôtes traditionnelle à Tozeur. Architecture berbère authentique, patio avec palmiers et fontaine.",
+    description: "Maison d'hôtes traditionnelle à Tozeur. Architecture berbère authentique, patio avec palmiers et fontaine. 6 chambres.",
     motivation: "Point de départ idéal pour explorer le désert du Sahara et les oasis de montagne.",
     datesDisponibles: [new Date(2026, 3, 6), new Date(2026, 3, 14), new Date(2026, 3, 28), new Date(2026, 4, 9)],
     datesEvenements: [new Date(2026, 3, 10), new Date(2026, 4, 1)],
@@ -257,7 +257,7 @@ const mockLogements = [
   },
   {
     id: 10, nom: "Ferme Bio Testour", lat: 36.5500, lng: 9.4450, proprietaire: "Rachid Sassi",
-    description: "Ferme biologique certifiés aux produits locaux. Séjours découverte de la vie rurale tunisienne.",
+    description: "Ferme biologique certifications aux produits locaux. Séjours découverte de la vie rurale tunisienne. 4 chambres d'hôtes.",
     motivation: "Apprentissage de l'agriculture biologique. Repas traditionnels avec produits de la ferme.",
     datesDisponibles: [new Date(2026, 3, 8), new Date(2026, 3, 20), new Date(2026, 4, 4), new Date(2026, 4, 18)],
     datesEvenements: [new Date(2026, 4, 12)],
@@ -269,7 +269,7 @@ const mockLogements = [
   },
   {
     id: 11, nom: "Ferme Oléicole Sfax", lat: 34.7406, lng: 10.7603, proprietaire: "Leila Bouazizi",
-    description: "Ferme oléicole familiale à Sfax. Production d'huile d'olive extra vierge et séjour découverte.",
+    description: "Ferme oléicole familiale à Sfax. Production d'huile d'olive extra vierge et séjour découverte. 3 chambres d'hôtes.",
     motivation: "Dégustation d'huiles d'olive et découverte du processus de fabrication.",
     datesDisponibles: [new Date(2026, 3, 9), new Date(2026, 3, 25), new Date(2026, 4, 6)],
     datesEvenements: [new Date(2026, 3, 30)],
@@ -281,7 +281,7 @@ const mockLogements = [
   },
   {
     id: 12, nom: "Domaine Viticole Grombalia", lat: 36.6000, lng: 10.5000, proprietaire: "Mehdi Daoud",
-    description: "Domaine viticole produces des vins rouges et blancs de qualité. Séjour œnologique avec cave à vin.",
+    description: "Domaine viticole produces des vins rouges et blancs de qualité. Séjour œnologique avec cave à vin. 5 chambres d'hôtes.",
     motivation: "Circuit de visite des vignobles et degustation de vins tunisiens.",
     datesDisponibles: [new Date(2026, 5, 5), new Date(2026, 5, 20)],
     datesEvenements: [new Date(2026, 5, 15)],
