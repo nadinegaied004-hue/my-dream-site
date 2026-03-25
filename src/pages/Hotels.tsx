@@ -388,10 +388,10 @@ const Hotels = () => {
           <div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="w-full flex items-center justify-between gap-1 text-sm hover:text-primary transition-colors"
+              className="w-full flex items-center justify-between gap-1 text-sm hover:text-cyan-400 transition-colors"
             >
               <span className="flex items-center gap-2">
-                <Filter size={16} className="text-primary" />
+                <Filter size={16} className="text-cyan-400" />
                 Trier par
               </span>
               <span>{showFilters ? "▲" : "▼"}</span>
@@ -558,7 +558,7 @@ const Hotels = () => {
                       <td>
                         <button
                           onClick={() => setExpandedLodging(expandedLodging === hotel.id ? null : hotel.id)}
-                          className="font-semibold whitespace-nowrap text-primary hover:underline"
+                          className="font-semibold whitespace-nowrap text-cyan-400 hover:underline"
                         >
                           {hotel.nom}
                         </button>
@@ -574,7 +574,7 @@ const Hotels = () => {
                           href={`https://www.google.com/maps?q=${hotel.lat},${hotel.lng}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary underline hover:text-primary/80"
+                          className="text-cyan-400 underline hover:text-cyan-300"
                         >
                           {hotel.lat.toFixed(4)}, {hotel.lng.toFixed(4)}
                         </a>
