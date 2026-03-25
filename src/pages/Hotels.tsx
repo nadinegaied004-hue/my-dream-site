@@ -564,7 +564,7 @@ const Hotels = () => {
                         </button>
                       </td>
                       <td>
-                        <span className="px-2 py-1 rounded-full text-xs bg-accent text-accent-foreground">
+                        <span className="px-2 py-1 rounded-full text-xs bg-accent text-accent-foreground whitespace-nowrap">
                           {hotel.categorie}
                         </span>
                       </td>
