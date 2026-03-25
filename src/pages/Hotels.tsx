@@ -554,7 +554,7 @@ const Hotels = () => {
                 ) : (
                   filtered.map((hotel) => (
                     <React.Fragment key={hotel.id}>
-                    <tr>
+<tr className="dark:bg-[#3d3428]">
                       <td>
                         <button
                           onClick={() => setExpandedLodging(expandedLodging === hotel.id ? null : hotel.id)}
