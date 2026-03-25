@@ -135,9 +135,9 @@ const Avis = () => {
       results = results.filter(r => r.typeLogement === selectedCategory);
     }
     return [...results].sort((a, b) => {
-      const catCompare = a.typeLogement.localeCompare(b.typeLogement, "fr");
+      const catCompare = (a.typeLogement || "").localeCompare(b.typeLogement || "", "fr");
       if (catCompare !== 0) return catCompare;
-      return a.nom.localeCompare(b.nom, "fr");
+      return (a.nom || "").localeCompare(b.nom || "", "fr");
     });
   }, [selectedCategory]);
 
