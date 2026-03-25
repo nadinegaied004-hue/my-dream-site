@@ -385,11 +385,11 @@ const Hotels = () => {
       <Navbar />
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Sidebar */}
-        <aside className="w-full md:w-32 lg:w-40 bg-card border-r border-border p-2 space-y-2 overflow-y-auto">
+        <aside className="w-full md:w-28 lg:w-32 bg-muted border-r border-border p-1 space-y-1 overflow-y-auto">
           <div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="w-full font-semibold text-sm mb-2 flex items-center justify-between gap-1 hover:text-primary transition-colors"
+              className="w-full font-bold text-xs mb-1 flex items-center justify-between gap-1 hover:text-primary transition-colors"
             >
               <span className="flex items-center gap-2">
                 <Filter size={18} className="text-primary" />
@@ -403,7 +403,7 @@ const Hotels = () => {
                   <button
                     key={mode.key}
                     onClick={() => handleFilterMode(mode.key)}
-                    className={`w-full text-left px-2 py-1 rounded text-xs transition-colors ${
+                    className={`w-full text-left px-1 py-0.5 rounded text-xs font-bold transition-colors ${
                       filterMode === mode.key
                         ? "bg-primary/10 text-primary font-semibold border border-primary/30"
                         : "hover:bg-muted text-foreground"
@@ -420,12 +420,12 @@ const Hotels = () => {
             <div className="border-t border-border pt-4">
               {filterMode === "categorie" && (
                 <div className="space-y-1">
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Catégories</h4>
+                  <h4 className="text-xs font-bold text-muted-foreground mb-1 uppercase tracking-wider">Catégories</h4>
                   {categories.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
-                      className={`w-full text-left px-2 py-1 rounded text-xs transition-colors ${
+                      className={`w-full text-left px-1 py-0.5 rounded text-xs font-bold transition-colors ${
                         selectedCategory === cat
                           ? "bg-primary text-primary-foreground font-semibold"
                           : "hover:bg-muted text-foreground"
@@ -439,7 +439,7 @@ const Hotels = () => {
 
               {filterMode === "evenement" && (
                 <div className="space-y-1">
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Événements à proximité</h4>
+                  <h4 className="text-xs font-bold text-muted-foreground mb-1 uppercase tracking-wider">Événements à proximité</h4>
                   {Object.entries(evenements).map(([group, items]) => (
                     <div key={group}>
                       <button
@@ -473,12 +473,12 @@ const Hotels = () => {
 
               {filterMode === "saison" && (
                 <div className="space-y-1">
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Saisons</h4>
+                  <h4 className="text-xs font-bold text-muted-foreground mb-1 uppercase tracking-wider">Saisons</h4>
                   {saisons.map((s) => (
                     <button
                       key={s}
                       onClick={() => setSelectedSaison(selectedSaison === s ? null : s)}
-                      className={`w-full text-left px-2 py-1 rounded text-xs transition-colors ${
+                      className={`w-full text-left px-1 py-0.5 rounded text-xs font-bold transition-colors ${
                         selectedSaison === s
                           ? "bg-primary text-primary-foreground font-semibold"
                           : "hover:bg-muted text-foreground"
@@ -492,12 +492,12 @@ const Hotels = () => {
 
               {filterMode === "attraction" && (
                 <div className="space-y-1">
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Attractions à proximité</h4>
+                  <h4 className="text-xs font-bold text-muted-foreground mb-1 uppercase tracking-wider">Attractions à proximité</h4>
                   {attractionsProximite.map((a) => (
                     <button
                       key={a}
                       onClick={() => setSelectedAttraction(selectedAttraction === a ? null : a)}
-                      className={`w-full text-left px-2 py-1 rounded text-xs transition-colors ${
+                      className={`w-full text-left px-1 py-0.5 rounded text-xs font-bold transition-colors ${
                         selectedAttraction === a
                           ? "bg-primary text-primary-foreground font-semibold"
                           : "hover:bg-muted text-foreground"
