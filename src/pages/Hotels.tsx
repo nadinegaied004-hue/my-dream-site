@@ -405,7 +405,7 @@ const Hotels = () => {
                     className={`w-full text-left px-2 py-1.5 rounded text-sm transition-colors ${
                       filterMode === mode.key
                         ? "bg-primary text-white"
-                        : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-[#FF8A65]"
+                        : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-[#FFAB91]"
                     }`}
                   >
                     {mode.label}
