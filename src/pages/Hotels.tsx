@@ -384,7 +384,7 @@ const Hotels = () => {
       <Navbar />
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Sidebar */}
-        <aside className="w-full md:w-1/3 lg:w-1/4 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
+        <aside className="w-full md:w-64 lg:w-72 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
           <div>
             <h3 className="font-display font-semibold text-lg mb-3 flex items-center gap-2">
               <Filter size={18} className="text-primary" />
