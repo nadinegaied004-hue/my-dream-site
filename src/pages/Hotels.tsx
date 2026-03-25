@@ -11,7 +11,7 @@ const categories = ["Hôtel", "Maison", "Maison d'hôtes", "Ferme"];
 const evenements = {
   "Culturel": ["Festival de Carthage", "Festival de Dougga", "Festival de Hammamet", "Journées Cinématographiques"],
   "Sportif": ["Football", "Basketball", "Tennis", "Handball"],
-  "Attraction": ["Parc Carthage Land", "Zoo de Tunis", "Musée du Bardo", "Site archéologique"],
+  "Parcs & Loisirs": ["Parc Carthage Land", "Zoo de Tunis", "Musée du Bardo", "Site archéologique"],
 };
 
 const saisons = ["Printemps", "Été", "Automne", "Hiver"];
