@@ -350,10 +350,10 @@ const Hotels = () => {
   };
 
   const filterModes: { key: FilterMode; label: string }[] = [
-    { key: "categorie", label: "Par catégorie" },
-    { key: "evenement", label: "Par événements" },
-    { key: "saison", label: "Par saison" },
-    { key: "attraction", label: "Par attractions" },
+    { key: "categorie", label: "Catégorie" },
+    { key: "evenement", label: "Événements" },
+    { key: "saison", label: "Saison" },
+    { key: "attraction", label: "Attractions" },
   ];
 
   const getTitle = () => {
