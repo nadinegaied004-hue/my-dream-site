@@ -150,108 +150,144 @@ type FilterMode = "categorie" | "evenement" | "saison" | "attraction";
 const mockLogements = [
   {
     id: 1, nom: "Hôtel El Mouradi Hammamet", lat: 36.4000, lng: 10.6167, proprietaire: "Ahmed Ben Salah",
+    description: "Hôtel 5 étoiles avec vue sur mer, piscines, spa et restaurant gastronomique. Situé au cœur de la station balnéaire de Hammamet.",
+    motivation: "Proximité de la plage et des monuments historiques de Hammamet. Idéal pour les familles et couples.",
     datesDisponibles: [new Date(2026, 3, 5), new Date(2026, 3, 10), new Date(2026, 3, 15), new Date(2026, 4, 1), new Date(2026, 4, 12)],
     datesEvenements: [new Date(2026, 3, 8), new Date(2026, 4, 20)],
     avis: 128, categorie: "Hôtel",
+    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
     evenements: [{ nom: "Festival de Hammamet", distance: 0.5 }, { nom: "Parc Carthage Land", distance: 1.2 }],
     saison: "Été",
     attractions: [{ nom: "Parc du Belvédère", distance: 80 }, { nom: "Centre commercial Tunisia Mall", distance: 75 }],
   },
   {
     id: 2, nom: "Hôtel Laico Tunis", lat: 36.8065, lng: 10.1815, proprietaire: "Fatima Trabelsi",
+    description: "Hôtel moderne au centre-ville de Tunis, proche des ministères et ambassades. Chambres spacieuses et business center.",
+    motivation: "Accès facile aux transports et proximité de la médina de Tunis. Parfait pour les voyages d'affaires.",
     datesDisponibles: [new Date(2026, 3, 2), new Date(2026, 3, 18), new Date(2026, 4, 5)],
     datesEvenements: [new Date(2026, 3, 14)],
     avis: 95, categorie: "Hôtel",
+    image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=400&h=300&fit=crop",
     evenements: [{ nom: "Journées Cinématographiques", distance: 0.8 }, { nom: "Festival de Carthage", distance: 5.0 }],
     saison: "Printemps",
     attractions: [{ nom: "Musée du Bardo", distance: 2.0 }, { nom: "Parc du Belvédère", distance: 1.5 }],
   },
   {
     id: 3, nom: "Hôtel Sheraton Sousse", lat: 35.8256, lng: 10.6369, proprietaire: "Karim Gharbi",
+    description: "Hôtel de luxe en front de mer à Sousse. Accès privé à la plage, piscine olimpique et animations nocturnes.",
+    motivation: "Idéal pour les amateurs de sports nautiques et la vie nocturne de Sousse. Réservation early bird disponible.",
     datesDisponibles: [new Date(2026, 4, 3), new Date(2026, 4, 20)],
     datesEvenements: [new Date(2026, 3, 25), new Date(2026, 4, 10)],
     avis: 210, categorie: "Hôtel",
+    image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&h=300&fit=crop",
     evenements: [{ nom: "Football", distance: 0.5 }, { nom: "Tennis", distance: 3.0 }],
     saison: "Été",
     attractions: [{ nom: "Salle omnisports de Sousse", distance: 2.0 }, { nom: "Centre commercial Tunisia Mall", distance: 120 }],
   },
   {
     id: 4, nom: "Maison Sidi Bou Saïd", lat: 36.8687, lng: 10.3497, proprietaire: "Nadia Bouzid",
+    description: "Maison traditionnelle bleue et blanche avec vue panoramique sur la mer. Terrasse privée et décoration authentique tunisienne.",
+    motivation: "Cadre romantique parfait pour les couples. À distance de marche de la célèbre colline de Sidi Bou Saïd.",
     datesDisponibles: [new Date(2026, 3, 1), new Date(2026, 3, 7), new Date(2026, 3, 22), new Date(2026, 4, 8)],
     datesEvenements: [new Date(2026, 3, 12)],
     avis: 34, categorie: "Maison",
+    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop",
     evenements: [{ nom: "Festival de Carthage", distance: 2.0 }, { nom: "Site archéologique", distance: 1.5 }],
     saison: "Printemps",
     attractions: [{ nom: "Parc du Belvédère", distance: 10 }, { nom: "Musée du Bardo", distance: 12 }],
   },
   {
     id: 5, nom: "Résidence Marina Yasmine", lat: 36.3833, lng: 10.5500, proprietaire: "Youssef Hammami",
+    description: "Résidence de charme avec jardin et piscine privée. Proche du port de Yasmine Hammamet et des restaurants.",
+    motivation: "Parfait pour les familles nombreuses. Cuisine équipée et espace de vie spacieux.",
     datesDisponibles: [new Date(2026, 3, 4), new Date(2026, 3, 11), new Date(2026, 4, 2), new Date(2026, 4, 15)],
     datesEvenements: [new Date(2026, 4, 5)],
     avis: 156, categorie: "Maison",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop",
     evenements: [{ nom: "Parc Carthage Land", distance: 0.3 }, { nom: "Festival de Hammamet", distance: 2.0 }],
     saison: "Été",
     attractions: [{ nom: "Centre commercial Tunisia Mall", distance: 70 }, { nom: "Salle des fêtes", distance: 1.2 }],
   },
   {
     id: 6, nom: "Villa Djerba Heritage", lat: 33.8076, lng: 10.8451, proprietaire: "Samira Jlassi",
+    description: "Villa de luxe avec piscine à Djerba. Architecture traditionnellemerge avec modernité. Plage privée à 5 minutes.",
+    motivation: "Destination prisée pour les lune de miel. Séjour tout inclus disponible.",
     datesDisponibles: [new Date(2026, 5, 1), new Date(2026, 5, 15)],
     datesEvenements: [new Date(2026, 5, 10)],
     avis: 64, categorie: "Maison",
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop",
     evenements: [{ nom: "Site archéologique", distance: 3.0 }, { nom: "Handball", distance: 5.0 }],
     saison: "Été",
     attractions: [{ nom: "Terrain de handball", distance: 5.0 }, { nom: "Salle des fêtes", distance: 2.0 }],
   },
   {
     id: 7, nom: "Dar El Jeld", lat: 36.7994, lng: 10.1712, proprietaire: "Hassan Meddeb",
+    description: "Maison d'hôtes de caractère dans la médina de Tunis. Patio intérieur, chambres décorées avec des éléments traditionnels.",
+    motivation: "Immersion totale dans la culture tunisienne. Petit-déjeuner traditionnel inclus.",
     datesDisponibles: [new Date(2026, 3, 3), new Date(2026, 3, 19), new Date(2026, 4, 7)],
     datesEvenements: [new Date(2026, 3, 20)],
     avis: 87, categorie: "Maison d'hôtes",
+    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop",
     evenements: [{ nom: "Journées Cinématographiques", distance: 1.0 }, { nom: "Musée du Bardo", distance: 3.0 }],
     saison: "Automne",
     attractions: [{ nom: "Palais des Congrès", distance: 4.0 }, { nom: "Parc du Belvédère", distance: 0.5 }],
   },
   {
     id: 8, nom: "Dar Zaghouan", lat: 36.4025, lng: 10.1427, proprietaire: "Amina Cherif",
+    description: "Maison d'hôtes campagne aux pieds des montagnes de Zaghouan. Air pur,randonnées et détente garantis.",
+    motivation: "Échappez au stress de la ville. Idéal pour les amateurs de nature et d'histoire.",
     datesDisponibles: [new Date(2026, 4, 10), new Date(2026, 4, 25)],
     datesEvenements: [new Date(2026, 4, 18)],
     avis: 45, categorie: "Maison d'hôtes",
+    image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400&h=300&fit=crop",
     evenements: [{ nom: "Basketball", distance: 15.0 }, { nom: "Football", distance: 20.0 }],
     saison: "Hiver",
     attractions: [{ nom: "Terrain de tennis", distance: 5.0 }, { nom: "Stade Olympique de Radès", distance: 40 }],
   },
   {
     id: 9, nom: "Dar Essalem Tozeur", lat: 33.9197, lng: 8.1335, proprietaire: "Omar Khelifi",
+    description: "Maison d'hôtes traditionnelle à Tozeur. Architecture berbère authentique, patio avec palmiers et fontaine.",
+    motivation: "Point de départ idéal pour explorer le désert du Sahara et les oasis de montagne.",
     datesDisponibles: [new Date(2026, 3, 6), new Date(2026, 3, 14), new Date(2026, 3, 28), new Date(2026, 4, 9)],
     datesEvenements: [new Date(2026, 3, 10), new Date(2026, 4, 1)],
     avis: 72, categorie: "Maison d'hôtes",
+    image: "https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=400&h=300&fit=crop",
     evenements: [{ nom: "Festival de Dougga", distance: 200 }, { nom: "Site archéologique", distance: 5.0 }],
     saison: "Printemps",
     attractions: [{ nom: "Salle des fêtes", distance: 1.0 }, { nom: "Foire Internationale de Tunis", distance: 350 }],
   },
   {
     id: 10, nom: "Ferme Bio Testour", lat: 36.5500, lng: 9.4450, proprietaire: "Rachid Sassi",
+    description: "Ferme biologique certifiés aux produits locaux. Séjours découverte de la vie rurale tunisienne.",
+    motivation: "Apprentissage de l'agriculture biologique. Repas traditionnels avec produits de la ferme.",
     datesDisponibles: [new Date(2026, 3, 8), new Date(2026, 3, 20), new Date(2026, 4, 4), new Date(2026, 4, 18)],
     datesEvenements: [new Date(2026, 4, 12)],
     avis: 23, categorie: "Ferme",
+    image: "https://images.unsplash.com/photo-1595855709915-bd98974a31d2?w=400&h=300&fit=crop",
     evenements: [{ nom: "Festival de Dougga", distance: 30 }, { nom: "Site archéologique", distance: 25 }],
     saison: "Été",
     attractions: [{ nom: "Parc du Belvédère", distance: 100 }, { nom: "Foire Internationale de Tunis", distance: 95 }],
   },
   {
     id: 11, nom: "Ferme Oléicole Sfax", lat: 34.7406, lng: 10.7603, proprietaire: "Leila Bouazizi",
+    description: "Ferme oléicole familiale à Sfax. Production d'huile d'olive extra vierge et séjour découverte.",
+    motivation: "Dégustation d'huiles d'olive et découverte du processus de fabrication.",
     datesDisponibles: [new Date(2026, 3, 9), new Date(2026, 3, 25), new Date(2026, 4, 6)],
     datesEvenements: [new Date(2026, 3, 30)],
     avis: 18, categorie: "Ferme",
+    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop",
     evenements: [{ nom: "Football", distance: 2.0 }, { nom: "Handball", distance: 3.0 }],
     saison: "Automne",
     attractions: [{ nom: "Salle omnisports de Sousse", distance: 130 }, { nom: "Terrain de handball", distance: 3.0 }],
   },
   {
     id: 12, nom: "Domaine Viticole Grombalia", lat: 36.6000, lng: 10.5000, proprietaire: "Mehdi Daoud",
+    description: "Domaine viticole produces des vins rouges et blancs de qualité. Séjour œnologique avec cave à vin.",
+    motivation: "Circuit de visite des vignobles et degustation de vins tunisiens.",
     datesDisponibles: [new Date(2026, 5, 5), new Date(2026, 5, 20)],
     datesEvenements: [new Date(2026, 5, 15)],
     avis: 41, categorie: "Ferme",
+    image: "https://images.unsplash.com/photo-1523528283115-9bf9b1699245?w=400&h=300&fit=crop",
     evenements: [{ nom: "Festival de Carthage", distance: 40 }, { nom: "Zoo de Tunis", distance: 35 }],
     saison: "Hiver",
     attractions: [{ nom: "Palais des Congrès", distance: 50 }, { nom: "Centre commercial Tunisia Mall", distance: 45 }],
@@ -486,9 +522,12 @@ const Hotels = () => {
             <table className="hotel-table w-full">
               <thead>
                 <tr>
+                  <th>Photo</th>
                   <th>Nom</th>
+                  <th>Description</th>
+                  <th>Motivation</th>
                   <th>Propriétaire</th>
-                  <th>Coordonnées (Lat, Lng)</th>
+                  <th>Adresse (coordonnées)</th>
                   <th>Calendrier</th>
                   <th>Événements (dist.)</th>
                   <th>Saison</th>
@@ -508,7 +547,16 @@ const Hotels = () => {
                 ) : (
                   filtered.map((hotel) => (
                     <tr key={hotel.id}>
+                      <td>
+                        <img 
+                          src={hotel.image} 
+                          alt={hotel.nom}
+                          className="w-20 h-14 object-cover rounded"
+                        />
+                      </td>
                       <td className="font-semibold whitespace-nowrap">{hotel.nom}</td>
+                      <td className="text-xs text-muted-foreground max-w-xs">{hotel.description}</td>
+                      <td className="text-xs text-muted-foreground max-w-xs">{hotel.motivation}</td>
                       <td className="text-muted-foreground whitespace-nowrap">{hotel.proprietaire}</td>
                       <td className="text-muted-foreground font-mono text-xs whitespace-nowrap">
                         <a
