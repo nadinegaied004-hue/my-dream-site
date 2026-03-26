@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Star, Camera, CheckCircle, Send, Gift, Plus, X, MapPin, Calendar } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useLang } from "@/context/LangContext";
 
 const mockReservations = [
   { id: 1, nomLog: "Hôtel El Mouradi Hammamet", periode: "3 nuits", dateDebut: "05/04/2026", dateFin: "08/04/2026", avisEnvoye: true, lieu: "Hammamet, Nabeul" },
@@ -15,25 +16,36 @@ const mockEvenements = [
   { id: 3, nom: "Festival de Jazz de Tabarka", date: "20/06/2026", lieu: "Fort Génois, Tabarka" },
 ];
 
-type Question = { id: string; label: string; reponse: boolean | null };
+type Question = { id: string; labelKey: string; reponse: string | boolean | null; type: "yesNo" | "experience" | "comportement" | "events" };
 
 const questionsInitiales: Question[] = [
-  { id: "experience", label: "L'expérience était bonne ?", reponse: null },
-  { id: "logement", label: "Le logement était bon ?", reponse: null },
-  { id: "evenement", label: "S'il y a eu un événement, il a été bon ?", reponse: null },
-  { id: "description", label: "Le logement respecte la description établie par le propriétaire ?", reponse: null },
-  { id: "comportement", label: "Le comportement du propriétaire était bon ?", reponse: null },
-  { id: "localisation", label: "La localisation était bien précisée ?", reponse: null },
-  { id: "securise", label: "C'était bien sécurisé ?", reponse: null },
-  { id: "propre", label: "C'était propre ?", reponse: null },
-  { id: "derange", label: "Quelque chose vous a dérangé (bruit, etc.) ?", reponse: null },
+  { id: "experience", labelKey: "Comment évaluez-vous votre expérience globale", reponse: null, type: "experience" },
+  { id: "conforme", labelKey: "Le logement était-il conforme à vos attentes", reponse: null, type: "yesNo" },
+  { id: "description", labelKey: "Le logement correspondait-il à la description fournie", reponse: null, type: "yesNo" },
+  { id: "propre", labelKey: "Le logement était-il propre", reponse: null, type: "yesNo" },
+  { id: "securise", labelKey: "Le logement était-il sécurisé", reponse: null, type: "yesNo" },
+  { id: "localisation", labelKey: "La localisation du logement était-elle correctement indiquée", reponse: null, type: "yesNo" },
+  { id: "comportement", labelKey: "Comment évaluez-vous le comportement du propriétaire", reponse: null, type: "comportement" },
+  { id: "evenements", labelKey: "Avez-vous assisté à des événements durant votre séjour", reponse: null, type: "yesNo" },
+  { id: "qualite_evenements", labelKey: "Comment évaluez-vous la qualité des événements", reponse: null, type: "experience" },
+  { id: "attractions", labelKey: "Avez-vous visité des attractions durant votre séjour", reponse: null, type: "yesNo" },
+  { id: "qualite_attractions", labelKey: "Comment évaluez-vous la qualité des attractions", reponse: null, type: "experience" },
+  { id: "incident", labelKey: "Avez-vous rencontré un problème durant votre séjour", reponse: null, type: "yesNo" },
+  { id: "derange", labelKey: "Y a-t-il eu des éléments qui vous ont dérangé", reponse: null, type: "yesNo" },
+  { id: "photos", labelKey: "Avez-vous pris des photos du logement", reponse: null, type: "yesNo" },
+  { id: "recommander", labelKey: "Recommanderiez-vous ce logement", reponse: null, type: "yesNo" },
 ];
 
-// Note sur 20 : questions (14 pts) + commentaire (3 pts) + photos (3 pts)
 const calculerNoteSur20 = (questions: Question[], commentaire: string, nbPhotos: number) => {
   const positives = questions.filter(q => {
-    if (q.id === "derange") return q.reponse === false;
-    return q.reponse === true;
+    if (q.type === "yesNo") {
+      if (q.id === "derange" || q.id === "incident") return q.reponse === false;
+      return q.reponse === true;
+    }
+    if (q.type === "experience" || q.type === "comportement") {
+      return q.reponse === "Très satisfaisante" || q.reponse === "Excellent";
+    }
+    return false;
   }).length;
   const baseScore = (positives / questions.length) * 14;
   const commentBonus = commentaire.trim().length > 0 ? 3 : 0;
@@ -49,23 +61,21 @@ const calculerReduction = (noteSur20: number) => {
 };
 
 const AvisPersonnel = () => {
+  const { t } = useLang();
   const [activeTab, setActiveTab] = useState<"logement" | "evenement">("logement");
   const [selectedReservation, setSelectedReservation] = useState<number | null>(null);
   const [selectedEvenement, setSelectedEvenement] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>(questionsInitiales);
   const [photos, setPhotos] = useState<string[]>([]);
-  const [commentaire, setCommentaire] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [resultat, setResultat] = useState<{ note20: number; reduction: number } | null>(null);
   const [showRecommendation, setShowRecommendation] = useState(false);
   const [recommendation, setRecommendation] = useState({ attraction: "", evenement: "", details: "" });
-
-  const isDuringStay = (dateDebut: string, dateFin: string) => {
-    const today = new Date();
-    const debut = new Date(dateDebut.split('/').reverse().join('-'));
-    const fin = new Date(dateFin.split('/').reverse().join('-'));
-    return today >= debut && today <= fin;
-  };
+  const [localisationDetail, setLocalisationDetail] = useState("");
+  const [incidentDetail, setIncidentDetail] = useState("");
+  const [derangeDetail, setDerangeDetail] = useState("");
+  const [commentaireLibre, setCommentaireLibre] = useState("");
+  const [suggestions, setSuggestions] = useState("");
 
   const isAfterStay = (dateFin: string) => {
     const today = new Date();
@@ -77,14 +87,19 @@ const AvisPersonnel = () => {
   const selectedRes = getSelectedReservationData();
   const canEdit = selectedRes ? !isAfterStay(selectedRes.dateFin) : true;
 
-  const handleReponse = (id: string, val: boolean) => {
+  const handleReponse = (id: string, val: string | boolean) => {
     setQuestions(questions.map(q => q.id === id ? { ...q, reponse: val } : q));
   };
 
   const noteCalculee = () => {
     const positives = questions.filter(q => {
-      if (q.id === "derange") return q.reponse === false;
-      return q.reponse === true;
+      if (q.type === "yesNo") {
+        if (q.id === "derange" || q.id === "incident") return q.reponse === false;
+        return q.reponse === true;
+      }
+      if (q.type === "experience") return q.reponse === "Très satisfaisante" || q.reponse === "Satisfaisante";
+      if (q.type === "comportement") return q.reponse === "Excellent" || q.reponse === "Bon";
+      return false;
     }).length;
     return Math.round((positives / questions.length) * 5);
   };
@@ -94,7 +109,7 @@ const AvisPersonnel = () => {
   };
 
   const handleSubmit = () => {
-    const note20 = calculerNoteSur20(questions, commentaire, photos.length);
+    const note20 = calculerNoteSur20(questions, commentaireLibre, photos.length);
     const reduction = calculerReduction(note20);
     setResultat({ note20, reduction });
     setSubmitted(true);
@@ -107,58 +122,60 @@ const AvisPersonnel = () => {
     setSelectedEvenement(null);
     setQuestions(questionsInitiales);
     setPhotos([]);
-    setCommentaire("");
+    setCommentaireLibre("");
+    setSuggestions("");
+    setLocalisationDetail("");
+    setIncidentDetail("");
+    setDerangeDetail("");
   };
 
-  const allAnswered = questions.every(q => q.reponse !== null);
+  const allAnswered = questions.every(q => {
+    if (q.id === "qualite_evenements") {
+      return questions.find(x => x.id === "evenements")?.reponse !== true || q.reponse !== null;
+    }
+    if (q.id === "qualite_attractions") {
+      return questions.find(x => x.id === "attractions")?.reponse !== true || q.reponse !== null;
+    }
+    return q.reponse !== null;
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-10">
-        <h2 className="section-title text-center mb-2">Mon espace avis — Historique</h2>
+        <h2 className="section-title text-center mb-2">{t("Mon espace avis")}</h2>
         <p className="text-muted-foreground text-center mb-8">
-          Veuillez répondre avec toute transparence.
+          {t("Veuillez répondre avec toute transparence")}
         </p>
 
-        {/* Tabs - Logement only */}
-        <div className="flex gap-2 mb-6 justify-center">
-          <button
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground"
-          >
-            Avis sur un logement
-          </button>
-        </div>
-
-        {/* Reservation table */}
         {activeTab === "logement" && !selectedReservation && !submitted && (
           <div className="overflow-x-auto rounded-lg border border-border mb-8">
             <table className="hotel-table w-full">
               <thead>
                 <tr>
-                  <th>Nom du logement</th>
-                  <th>Durée</th>
-                  <th>Date début</th>
-                  <th>Dates (début - fin)</th>
-                  <th>Avis envoyé</th>
-                  <th>Action</th>
+                  <th>{t("Nom du logement")}</th>
+                  <th>{t("Durée")}</th>
+                  <th>{t("Date début")}</th>
+                  <th>{t("Dates (début - fin)")}</th>
+                  <th>{t("Avis envoyé")}</th>
+                  <th>{t("Action")}</th>
                 </tr>
               </thead>
               <tbody>
                 {mockReservations.map((r) => (
                   <tr key={r.id}>
-                    <td className="font-semibold">{r.nomLog}</td>
-                    <td className="text-muted-foreground">{r.periode}</td>
+                    <td className="font-semibold">{t(r.nomLog)}</td>
+                    <td className="text-muted-foreground">{t(r.periode)}</td>
                     <td className="text-muted-foreground">{r.dateDebut}</td>
                     <td className="text-muted-foreground text-xs">{r.dateDebut} - {r.dateFin}</td>
                     <td>
                       {r.avisEnvoye ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                          <CheckCircle size={12} /> Envoyé
+                          <CheckCircle size={12} /> {t("Envoyé")}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-orange-700 bg-orange-100 px-2 py-1 rounded-full">
-                          En attente
+                          {t("En attente")}
                         </span>
                       )}
                     </td>
@@ -168,7 +185,7 @@ const AvisPersonnel = () => {
                           onClick={() => setSelectedReservation(r.id)}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                         >
-                          Donner mon avis
+                          {t("Donner mon avis")}
                         </button>
                       )}
                     </td>
@@ -179,178 +196,542 @@ const AvisPersonnel = () => {
           </div>
         )}
 
-        {/* Event selection */}
-        {activeTab === "evenement" && !selectedEvenement && !submitted && (
-          <div className="max-w-2xl mx-auto">
-            <h3 className="font-display font-semibold text-lg mb-4">Sélectionnez l'événement sur lequel vous voulez donner votre avis</h3>
-            <div className="space-y-3">
-              {mockEvenements.map((evt) => (
-                <button
-                  key={evt.id}
-                  onClick={() => setSelectedEvenement(evt.id)}
-                  className="w-full text-left p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 transition-colors"
-                >
-                  <div className="font-semibold">{evt.nom}</div>
-                  <div className="text-sm text-muted-foreground">{evt.date} — {evt.lieu}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Questionnaire */}
         {(selectedReservation || selectedEvenement) && !submitted && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-card rounded-xl border border-border p-6">
-              <h3 className="font-display font-semibold text-lg mb-1">Questionnaire d'évaluation</h3>
-              <p className="text-sm text-muted-foreground mb-6">⚠ Tous les champs sont obligatoires</p>
+              <h3 className="font-display font-semibold text-lg mb-1">{t("Questionnaire d'évaluation")}</h3>
+              <p className="text-sm text-muted-foreground mb-6">⚠ {t("Tous les champs sont obligatoires")}</p>
 
               {!canEdit && (
                 <div className="mb-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
                   <p className="text-sm text-orange-700 dark:text-orange-300">
-                    ⏰ Votre séjour est terminé. Vous pouvez uniquement visualiser ce formulaire mais vous ne pouvez plus le modifier.
+                    ⏰ {t("Votre séjour est terminé. Vous pouvez uniquement visualiser ce formulaire mais vous ne pouvez plus le modifier.")}
                   </p>
                 </div>
               )}
 
-              <div className="space-y-4">
-                {questions.map((q) => (
-                  <div key={q.id} className="flex items-center justify-between gap-4 py-2 border-b border-border last:border-0">
-                    <span className="text-sm font-medium flex-1">{q.label}</span>
-                    <div className="flex gap-2">
+              {/* 🔹 1. Évaluation générale */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Évaluation générale")}
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-sm font-medium block mb-2">{t("Comment évaluez-vous votre expérience globale")}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {["Très satisfaisante", "Satisfaisante", "Moyenne", "Insatisfaisante"].map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => handleReponse("experience", opt)}
+                          disabled={!canEdit}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            questions.find(q => q.id === "experience")?.reponse === opt
+                              ? "bg-green-600 text-white"
+                              : canEdit
+                                ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {t(opt)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 🔹 2. Qualité du logement */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Qualité du logement")}
+                </h4>
+                <div className="space-y-4">
+                  {[
+                    { id: "conforme", label: "Le logement était-il conforme à vos attentes" },
+                    { id: "description", label: "Le logement correspondait-il à la description fournie" },
+                    { id: "propre", label: "Le logement était-il propre" },
+                    { id: "securise", label: "Le logement était-il sécurisé" },
+                  ].map((q) => (
+                    <div key={q.id}>
+                      <span className="text-sm font-medium block mb-2">{t(q.label)}</span>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleReponse(q.id, true)}
+                          disabled={!canEdit}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            questions.find(x => x.id === q.id)?.reponse === true
+                              ? "bg-green-600 text-white"
+                              : canEdit
+                                ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {t("Oui")}
+                        </button>
+                        <button
+                          onClick={() => handleReponse(q.id, false)}
+                          disabled={!canEdit}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            questions.find(x => x.id === q.id)?.reponse === false
+                              ? "bg-red-600 text-white"
+                              : canEdit
+                                ? "bg-muted text-foreground hover:bg-red-100 border border-border"
+                                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {t("Non")}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 🔹 3. Localisation */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Localisation")}
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-sm font-medium block mb-2">{t("La localisation du logement était-elle correctement indiquée")}</span>
+                    <div className="flex gap-3">
                       <button
-                        onClick={() => handleReponse(q.id, true)}
+                        onClick={() => handleReponse("localisation", true)}
                         disabled={!canEdit}
-                        className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                          q.reponse === true
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "localisation")?.reponse === true
                             ? "bg-green-600 text-white"
                             : canEdit
-                              ? "bg-muted text-foreground hover:bg-green-100"
+                              ? "bg-muted text-foreground hover:bg-green-100 border border-border"
                               : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                         }`}
                       >
-                        Oui
+                        {t("Oui")}
                       </button>
                       <button
-                        onClick={() => handleReponse(q.id, false)}
+                        onClick={() => handleReponse("localisation", false)}
                         disabled={!canEdit}
-                        className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                          q.reponse === false
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "localisation")?.reponse === false
                             ? "bg-red-600 text-white"
                             : canEdit
-                              ? "bg-muted text-foreground hover:bg-red-100"
+                              ? "bg-muted text-foreground hover:bg-red-100 border border-border"
                               : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                         }`}
                       >
-                        Non
+                        {t("Non")}
                       </button>
                     </div>
                   </div>
-                ))}
+                  {questions.find(q => q.id === "localisation")?.reponse === false && (
+                    <div className="p-3 rounded-lg bg-accent/50">
+                      <label className="text-sm text-accent-foreground block mb-2">
+                        {t("Si non, veuillez préciser la localisation correcte (facultatif)")}
+                      </label>
+                      <textarea
+                        value={localisationDetail}
+                        onChange={(e) => setLocalisationDetail(e.target.value)}
+                        disabled={!canEdit}
+                        className="input-field min-h-[60px] text-sm"
+                        placeholder={t("Votre localisation...")}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {questions.find(q => q.id === "localisation")?.reponse === false && (
-                <div className="mt-4 p-3 rounded-lg bg-accent/50 text-sm text-accent-foreground">
-                  📍 Si non, voici la carte — vous pourrez préciser l'emplacement exact.
-                </div>
-              )}
-
-              {/* Photos */}
-              <div className="mt-6">
-                <h4 className="text-sm font-semibold mb-2">Si vous avez pris des photos :</h4>
-                <button
-                  onClick={handlePhotoUpload}
-                  disabled={!canEdit}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed text-sm transition-colors ${
-                    canEdit
-                      ? "border-border text-muted-foreground hover:border-primary hover:text-primary"
-                      : "border-border text-muted-foreground/50 cursor-not-allowed"
-                  }`}
-                >
-                  <Camera size={16} />
-                  Télécharger des photos
-                </button>
-                {photos.length > 0 && (
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {photos.map((p, i) => (
-                      <span key={i} className="px-2 py-1 bg-muted rounded text-xs">{p}</span>
+              {/* 🔹 4. Propriétaire / Hôte */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Propriétaire / Hôte")}
+                </h4>
+                <div>
+                  <span className="text-sm font-medium block mb-2">{t("Comment évaluez-vous le comportement du propriétaire")}</span>
+                  <div className="flex flex-wrap gap-2">
+                    {["Excellent", "Bon", "Moyen", "Insatisfaisant"].map((opt) => (
+                      <button
+                        key={opt}
+                        onClick={() => handleReponse("comportement", opt)}
+                        disabled={!canEdit}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "comportement")?.reponse === opt
+                            ? "bg-green-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t(opt)}
+                      </button>
                     ))}
                   </div>
-                )}
+                </div>
               </div>
 
-              {/* Commentaire */}
-              <div className="mt-6">
-                <h4 className="text-sm font-semibold mb-2">Vous pouvez vous exprimer librement :</h4>
-                <textarea
-                  value={commentaire}
-                  onChange={(e) => setCommentaire(e.target.value)}
-                  disabled={!canEdit}
-                  className={`input-field min-h-[80px] ${!canEdit ? "opacity-50 cursor-not-allowed" : ""}`}
-                  placeholder="Partagez votre expérience..."
-                />
+              {/* 🔹 5. Événements */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Événements")}
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-sm font-medium block mb-2">{t("Avez-vous assisté à des événements durant votre séjour")}</span>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleReponse("evenements", true)}
+                        disabled={!canEdit}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "evenements")?.reponse === true
+                            ? "bg-green-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Oui")}
+                      </button>
+                      <button
+                        onClick={() => handleReponse("evenements", false)}
+                        disabled={!canEdit}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "evenements")?.reponse === false
+                            ? "bg-red-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-red-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Non")}
+                      </button>
+                    </div>
+                  </div>
+                  {questions.find(q => q.id === "evenements")?.reponse === true && (
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <label className="text-sm font-medium block mb-2">{t("Comment évaluez-vous la qualité des événements")}</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Très satisfaisante", "Satisfaisante", "Moyenne", "Insatisfaisante"].map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => handleReponse("qualite_evenements", opt)}
+                            disabled={!canEdit}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              questions.find(q => q.id === "qualite_evenements")?.reponse === opt
+                                ? "bg-green-600 text-white"
+                                : canEdit
+                                  ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                            }`}
+                          >
+                            {t(opt)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Recommandations du client */}
-              <div className="mt-6 border-t border-border pt-6">
-                {canEdit && (
-                  <button
-                    onClick={() => setShowRecommendation(!showRecommendation)}
-                    className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
-                  >
-                    <Plus size={16} />
-                    Ajouter une recommandation (attractions/événements à proximité)
-                  </button>
-                )}
-                
-                {showRecommendation && (
-                  <div className="mt-4 p-4 rounded-lg bg-muted/50 space-y-4">
-                    <div>
-                      <label className="text-sm font-medium block mb-1">Attraction recommandée :</label>
-                      <input
-                        type="text"
-                        value={recommendation.attraction}
-                        onChange={(e) => setRecommendation({...recommendation, attraction: e.target.value})}
+              {/* 🔹 6. Attractions */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Attractions")}
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-sm font-medium block mb-2">{t("Avez-vous visité des attractions durant votre séjour")}</span>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleReponse("attractions", true)}
                         disabled={!canEdit}
-                        className="input-field"
-                        placeholder="Nom de l'attraction..."
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium block mb-1">Événement recommandé :</label>
-                      <input
-                        type="text"
-                        value={recommendation.evenement}
-                        onChange={(e) => setRecommendation({...recommendation, evenement: e.target.value})}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "attractions")?.reponse === true
+                            ? "bg-green-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Oui")}
+                      </button>
+                      <button
+                        onClick={() => handleReponse("attractions", false)}
                         disabled={!canEdit}
-                        className="input-field"
-                        placeholder="Nom de l'événement..."
-                      />
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "attractions")?.reponse === false
+                            ? "bg-red-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-red-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Non")}
+                      </button>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium block mb-1">Détails :</label>
+                  </div>
+                  {questions.find(q => q.id === "attractions")?.reponse === true && (
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <label className="text-sm font-medium block mb-2">{t("Comment évaluez-vous la qualité des attractions")}</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Très satisfaisante", "Satisfaisante", "Moyenne", "Insatisfaisante"].map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => handleReponse("qualite_attractions", opt)}
+                            disabled={!canEdit}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              questions.find(q => q.id === "qualite_attractions")?.reponse === opt
+                                ? "bg-green-600 text-white"
+                                : canEdit
+                                  ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                            }`}
+                          >
+                            {t(opt)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 🔹 7. Incidents ou problèmes */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Incidents ou problèmes")}
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-sm font-medium block mb-2">{t("Avez-vous rencontré un problème durant votre séjour")}</span>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleReponse("incident", true)}
+                        disabled={!canEdit}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "incident")?.reponse === true
+                            ? "bg-green-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Oui")}
+                      </button>
+                      <button
+                        onClick={() => handleReponse("incident", false)}
+                        disabled={!canEdit}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "incident")?.reponse === false
+                            ? "bg-red-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-red-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Non")}
+                      </button>
+                    </div>
+                  </div>
+                  {questions.find(q => q.id === "incident")?.reponse === true && (
+                    <div className="p-3 rounded-lg bg-accent/50">
+                      <label className="text-sm text-accent-foreground block mb-2">
+                        {t("Si oui, veuillez préciser (facultatif)")}
+                      </label>
                       <textarea
-                        value={recommendation.details}
-                        onChange={(e) => setRecommendation({...recommendation, details: e.target.value})}
+                        value={incidentDetail}
+                        onChange={(e) => setIncidentDetail(e.target.value)}
                         disabled={!canEdit}
-                        className="input-field min-h-[60px]"
-                        placeholder="Pourquoi recommandez-vous cet endroit/événement..."
+                        className="input-field min-h-[60px] text-sm"
+                        placeholder={t("Décrivez le problème...")}
                       />
                     </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 🔹 7. Points négatifs */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Points négatifs")}
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-sm font-medium block mb-2">{t("Y a-t-il eu des éléments qui vous ont dérangé")}</span>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleReponse("derange", true)}
+                        disabled={!canEdit}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "derange")?.reponse === true
+                            ? "bg-green-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Oui")}
+                      </button>
+                      <button
+                        onClick={() => handleReponse("derange", false)}
+                        disabled={!canEdit}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "derange")?.reponse === false
+                            ? "bg-red-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-red-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Non")}
+                      </button>
+                    </div>
+                  </div>
+                  {questions.find(q => q.id === "derange")?.reponse === true && (
+                    <div className="p-3 rounded-lg bg-accent/50">
+                      <label className="text-sm text-accent-foreground block mb-2">
+                        {t("Si oui, précisez (facultatif)")}
+                      </label>
+                      <textarea
+                        value={derangeDetail}
+                        onChange={(e) => setDerangeDetail(e.target.value)}
+                        disabled={!canEdit}
+                        className="input-field min-h-[60px] text-sm"
+                        placeholder={t("Décrivez ce qui vous a gêné...")}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 🔹 8. Photos */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Photos")}
+                </h4>
+                <div>
+                  <span className="text-sm font-medium block mb-2">{t("Avez-vous pris des photos du logement")}</span>
+                  <div className="flex gap-3">
                     <button
-                      onClick={() => setShowRecommendation(false)}
-                      className="text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => handleReponse("photos", true)}
+                      disabled={!canEdit}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        questions.find(q => q.id === "photos")?.reponse === true
+                          ? "bg-green-600 text-white"
+                          : canEdit
+                            ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                            : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                      }`}
                     >
-                      <X size={14} className="inline mr-1" /> Masquer
+                      {t("Oui")}
+                    </button>
+                    <button
+                      onClick={() => handleReponse("photos", false)}
+                      disabled={!canEdit}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        questions.find(q => q.id === "photos")?.reponse === false
+                          ? "bg-red-600 text-white"
+                          : canEdit
+                            ? "bg-muted text-foreground hover:bg-red-100 border border-border"
+                            : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                      }`}
+                    >
+                      {t("Non")}
                     </button>
                   </div>
-                )}
+                  {questions.find(q => q.id === "photos")?.reponse === true && (
+                    <button
+                      onClick={handlePhotoUpload}
+                      disabled={!canEdit}
+                      className={`mt-3 flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed text-sm transition-colors ${
+                        canEdit
+                          ? "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                          : "border-border text-muted-foreground/50 cursor-not-allowed"
+                      }`}
+                    >
+                      <Camera size={16} />
+                      {t("Télécharger des photos")}
+                    </button>
+                  )}
+                  {photos.length > 0 && (
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                      {photos.map((p, i) => (
+                        <span key={i} className="px-2 py-1 bg-muted rounded text-xs">{p}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Note calculée */}
+              {/* 🔹 9. Commentaire libre */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Commentaire libre")}
+                </h4>
+                <div>
+                  <label className="text-sm font-medium block mb-2">{t("Commentaires (facultatif)")}</label>
+                  <textarea
+                    value={commentaireLibre}
+                    onChange={(e) => setCommentaireLibre(e.target.value)}
+                    disabled={!canEdit}
+                    className={`input-field min-h-[80px] ${!canEdit ? "opacity-50 cursor-not-allowed" : ""}`}
+                    placeholder={t("Partagez votre expérience...")}
+                  />
+                </div>
+              </div>
+
+              {/* 🔹 10. Recommandations */}
+              <div className="mb-6">
+                <h4 className="text-base font-semibold mb-3 flex items-center gap-2">
+                  <span className="text-primary">🔹</span> {t("Recommandations")}
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-sm font-medium block mb-2">{t("Recommanderiez-vous ce logement")}</span>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleReponse("recommander", true)}
+                        disabled={!canEdit}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "recommander")?.reponse === true
+                            ? "bg-green-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Oui")}
+                      </button>
+                      <button
+                        onClick={() => handleReponse("recommander", false)}
+                        disabled={!canEdit}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          questions.find(q => q.id === "recommander")?.reponse === false
+                            ? "bg-red-600 text-white"
+                            : canEdit
+                              ? "bg-muted text-foreground hover:bg-red-100 border border-border"
+                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        {t("Non")}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-2">{t("Suggestions d'amélioration ou recommandations (facultatif)")}</label>
+                    <textarea
+                      value={suggestions}
+                      onChange={(e) => setSuggestions(e.target.value)}
+                      disabled={!canEdit}
+                      className={`input-field min-h-[80px] ${!canEdit ? "opacity-50 cursor-not-allowed" : ""}`}
+                      placeholder={t("Vos suggestions...")}
+                    />
+                  </div>
+                </div>
+              </div>
+
               {allAnswered && (
                 <div className="mt-6 p-4 rounded-lg bg-primary/10 text-center">
-                  <p className="text-sm text-muted-foreground mb-1">Note attribuée automatiquement</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("Note attribuée automatiquement")}</p>
                   <div className="flex items-center justify-center gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
@@ -364,12 +745,11 @@ const AvisPersonnel = () => {
                 </div>
               )}
 
-              {/* Message des points cadeau */}
               {allAnswered && (
                 <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                   <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
                     <Gift size={16} />
-                    <span>En remplissant ce formulaire, vous pouvez profiter de <strong>{resultat ? resultat.reduction : 0}% de réduction</strong> sur votre prochaine réservation !</span>
+                    <span>{t("En remplissant ce formulaire, vous pouvez profiter de")} <strong>{resultat ? resultat.reduction : 0}% {t("de réduction sur votre prochaine réservation")}</strong></span>
                   </p>
                 </div>
               )}
@@ -377,7 +757,7 @@ const AvisPersonnel = () => {
               <div className="flex items-center gap-4 mt-6">
                 {allAnswered && resultat && (
                   <div className="flex-1 p-3 rounded-lg bg-primary/10 text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Note du site</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t("Note du site")}</p>
                     <div className="flex items-center justify-center gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
@@ -400,52 +780,50 @@ const AvisPersonnel = () => {
                   }`}
                 >
                   <Send size={16} />
-                  {canEdit ? "Valider le formulaire" : "Formulaire verrouillé"}
+                  {canEdit ? t("Valider le formulaire") : t("Formulaire verrouillé")}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Confirmation avec bonus */}
         {submitted && resultat && (
           <div className="max-w-lg mx-auto text-center py-12">
             <CheckCircle className="mx-auto text-green-600 mb-4" size={48} />
-            <h3 className="font-display text-xl font-semibold mb-2">Merci beaucoup !</h3>
+            <h3 className="font-display text-xl font-semibold mb-2">{t("Merci beaucoup !")}</h3>
             <p className="text-muted-foreground mb-6">
-              Votre avis a été enregistré avec succès.
+              {t("Votre avis a été enregistré avec succès.")}
             </p>
 
-            {/* Points bonus & réduction */}
             <div className="bg-card rounded-xl border border-border p-6 space-y-4">
               <div className="flex items-center justify-center gap-2 text-primary">
                 <Gift size={24} />
-                <span className="font-display text-lg font-semibold">Vos récompenses</span>
+                <span className="font-display text-lg font-semibold">{t("Vos récompenses")}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg bg-primary/10">
-                  <p className="text-sm text-muted-foreground mb-1">Note obtenue</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("Note obtained")}</p>
                   <p className="text-2xl font-bold text-primary">{resultat.note20}/20</p>
                 </div>
                 <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
-                  <p className="text-sm text-muted-foreground mb-1">Réduction obtenue</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("Réduction obtained")}</p>
                   <p className="text-2xl font-bold text-green-600">-{resultat.reduction}%</p>
                 </div>
               </div>
 
               <p className="text-sm text-muted-foreground">
-                🎁 Votre réduction de <strong>{resultat.reduction}%</strong> sera appliquée automatiquement sur votre prochaine réservation.
+                🎁 {t("Votre réduction de")} <strong>{resultat.reduction}%</strong> {t("sera appliquée automatiquement sur votre prochaine réservation.")}
               </p>
 
               <div className="text-xs text-muted-foreground/60 space-y-1">
-                <p>📝 Commentaire : +3 pts | 📸 Photos : +1 pt/photo (max 3)</p>
-                <p>≥18/20 → 15% | ≥14/20 → 10% | ≥10/20 → 5% | &lt;10/20 → 2%</p>
+                <p>{t("Commentaire")}</p>
+                <p>{t("Note calculation")}</p>
               </div>
             </div>
 
             <button onClick={handleReset} className="btn-primary mt-6">
-              Retour à l'historique
+              {t("Retour à l'historique")}
             </button>
           </div>
         )}

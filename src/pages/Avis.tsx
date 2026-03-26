@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { Star, MapPin, Filter } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useLang } from "@/context/LangContext";
 
 const calculerNoteSur20 = (reponses: { positives: number; total: number; aCommentaire: boolean; nbPhotos: number }) => {
   const baseScore = (reponses.positives / reponses.total) * 14;
@@ -125,10 +126,22 @@ const NoteBar = ({ note }: { note: number }) => {
 };
 
 const Avis = () => {
-  const [searchParams] = useSearchParams();
+  const { t } = useLang();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const typeFilter = searchParams.get("type");
   const logementFilter = searchParams.get("logement");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(typeFilter);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(typeFilter || null);
+
+  const handleFilter = (category: string | null) => {
+    setSelectedCategory(category);
+    // Clear URL params when selecting a category from buttons
+    if (category) {
+      navigate(`/avis?type=${encodeURIComponent(category)}`, { replace: true });
+    } else {
+      navigate("/avis", { replace: true });
+    }
+  };
 
   const filteredReviews = useMemo(() => {
     let results = [...mockReviews];
@@ -141,7 +154,7 @@ const Avis = () => {
     return [...results].sort((a, b) => {
       const catCompare = (a.typeLogement || "").localeCompare(b.typeLogement || "", "fr");
       if (catCompare !== 0) return catCompare;
-      return (a.nom || "").localeCompare(b.nom || "", "fr");
+      return (a.nomComplet || "").localeCompare(b.nomComplet || "", "fr");
     });
   }, [selectedCategory, logementFilter]);
 
@@ -149,28 +162,28 @@ const Avis = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-10">
-        <h2 className="section-title text-center mb-2">Les avis des clients</h2>
-        <p className="text-muted-foreground text-center mb-6">Découvrez ce que nos visiteurs pensent</p>
+        <h2 className="section-title text-center mb-2">{t("Les avis des clients")}</h2>
+        <p className="text-muted-foreground text-center mb-6">{t("Découvrez ce que nos visiteurs pensent")}</p>
 
         {/* Filter by housing type */}
         <div className="flex flex-wrap gap-2 justify-center mb-8">
           <button
-            onClick={() => setSelectedCategory(null)}
+            onClick={() => handleFilter(null)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               selectedCategory === null ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/80"
             }`}
           >
-            Tous
+            {t("Tous")}
           </button>
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+              onClick={() => handleFilter(selectedCategory === cat ? null : cat)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 selectedCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/80"
               }`}
             >
-              {cat}
+              {t(cat)}
             </button>
           ))}
         </div>
@@ -191,10 +204,10 @@ const Avis = () => {
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <MapPin size={12} className="text-primary shrink-0" />
-                <span>{r.lieu}</span>
+                <span>{t(r.lieu.split(",")[0])}</span>
               </div>
               <div className="flex items-center gap-1 text-xs">
-                <span className="px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{r.typeLogement}</span>
+                <span className="px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{t(r.typeLogement)}</span>
               </div>
               <NoteBar note={r.noteSur20} />
               <p className="text-sm text-muted-foreground flex-1">{r.avis}</p>
@@ -202,7 +215,7 @@ const Avis = () => {
                 <span className="text-xs text-muted-foreground/60">{r.date}</span>
                 {r.reduction > 0 && (
                   <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
-                    -{r.reduction}% obtenu
+                    -{r.reduction}% {t("obtenu")}
                   </span>
                 )}
               </div>
@@ -211,15 +224,15 @@ const Avis = () => {
         </div>
 
         <div className="auth-container text-center">
-          <h3 className="font-display text-xl font-semibold mb-4">Veuillez entrer votre avis</h3>
+          <h3 className="font-display text-xl font-semibold mb-4">{t("Veuillez entrer votre avis")}</h3>
           <p className="text-muted-foreground mb-6">
-            Sélectionnez le logement ou l'événement sur lequel vous voulez donner votre avis
+            {t("Sélectionnez le logement")}
           </p>
           <Link
             to="/avis-personnel"
             className="btn-primary inline-flex items-center gap-2"
           >
-            Accéder à mon historique de réservations
+            {t("Accéder à mon historique")}
           </Link>
         </div>
       </main>
