@@ -137,7 +137,7 @@ const AvisPersonnel = () => {
       id: Date.now(),
       nomComplet: "Vous",
       note: noteCalculee(),
-      noteSur20,
+      noteSur20: note20,
       avis: commentaireLibre,
       date: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }),
       photo: null,
