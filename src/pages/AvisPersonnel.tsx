@@ -67,6 +67,7 @@ const AvisPersonnel = () => {
   const [selectedEvenement, setSelectedEvenement] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>(questionsInitiales);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [resultat, setResultat] = useState<{ note20: number; reduction: number } | null>(null);
   const [showRecommendation, setShowRecommendation] = useState(false);
@@ -105,7 +106,24 @@ const AvisPersonnel = () => {
   };
 
   const handlePhotoUpload = () => {
-    setPhotos([...photos, `photo_${photos.length + 1}.jpg`]);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) {
+        const newPhotos: string[] = [];
+        const newFiles: File[] = [];
+        Array.from(files).forEach((file) => {
+          newFiles.push(file);
+          newPhotos.push(URL.createObjectURL(file));
+        });
+        setPhotos([...photos, ...newPhotos]);
+        setPhotoFiles([...photoFiles, ...newFiles]);
+      }
+    };
+    input.click();
   };
 
   const handleSubmit = () => {
@@ -113,6 +131,23 @@ const AvisPersonnel = () => {
     const reduction = calculerReduction(note20);
     setResultat({ note20, reduction });
     setSubmitted(true);
+
+    const selectedRes = getSelectedReservationData();
+    const newReview = {
+      id: Date.now(),
+      nomComplet: "Vous",
+      note: noteCalculee(),
+      noteSur20,
+      avis: commentaireLibre,
+      date: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }),
+      photo: null,
+      reduction,
+      lieu: selectedRes ? `${selectedRes.nomLog}, ${selectedRes.lieu}` : "",
+      typeLogement: "Hôtel",
+    };
+
+    const existingReviews = JSON.parse(localStorage.getItem("stayease_reviews") || "[]");
+    localStorage.setItem("stayease_reviews", JSON.stringify([newReview, ...existingReviews]));
   };
 
   const handleReset = () => {
@@ -122,6 +157,7 @@ const AvisPersonnel = () => {
     setSelectedEvenement(null);
     setQuestions(questionsInitiales);
     setPhotos([]);
+    setPhotoFiles([]);
     setCommentaireLibre("");
     setSuggestions("");
     setLocalisationDetail("");
@@ -655,7 +691,9 @@ const AvisPersonnel = () => {
                   {photos.length > 0 && (
                     <div className="flex gap-2 mt-2 flex-wrap">
                       {photos.map((p, i) => (
-                        <span key={i} className="px-2 py-1 bg-muted rounded text-xs">{p}</span>
+                        <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border">
+                          <img src={p} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                        </div>
                       ))}
                     </div>
                   )}

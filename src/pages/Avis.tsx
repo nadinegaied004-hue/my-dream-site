@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Star, MapPin, Filter } from "lucide-react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -132,6 +132,16 @@ const Avis = () => {
   const typeFilter = searchParams.get("type");
   const logementFilter = searchParams.get("logement");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(typeFilter || null);
+  const [localReviews, setLocalReviews] = useState<typeof mockReviews>([]);
+
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("stayease_reviews") || "[]");
+    setLocalReviews(stored);
+  }, []);
+
+  const allReviews = useMemo(() => {
+    return [...localReviews, ...mockReviews];
+  }, [localReviews]);
 
   const handleFilter = (category: string | null) => {
     setSelectedCategory(category);
@@ -144,7 +154,7 @@ const Avis = () => {
   };
 
   const filteredReviews = useMemo(() => {
-    let results = [...mockReviews];
+    let results = [...allReviews];
     if (selectedCategory) {
       results = results.filter(r => r.typeLogement === selectedCategory);
     }
@@ -156,7 +166,7 @@ const Avis = () => {
       if (catCompare !== 0) return catCompare;
       return (a.nomComplet || "").localeCompare(b.nomComplet || "", "fr");
     });
-  }, [selectedCategory, logementFilter]);
+  }, [selectedCategory, logementFilter, allReviews]);
 
   return (
     <div className="min-h-screen flex flex-col">
