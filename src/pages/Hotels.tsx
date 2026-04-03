@@ -833,6 +833,22 @@ const Hotels = () => {
                                 evenement: { backgroundColor: "hsl(35 60% 45%)", color: "white", borderRadius: "9999px" },
                               }}
                             />
+                            {hotel.evenements.length > 0 && (
+                              <div className="p-2 border-t border-border max-h-32 overflow-y-auto">
+                                <p className="text-xs font-medium mb-1">{t("Événements disponibles")}:</p>
+                                <div className="space-y-1">
+                                  {hotel.evenements.map((e) => (
+                                    <button
+                                      key={e.nom}
+                                      onClick={() => setDetailPopup({ type: "evenement", nom: e.nom })}
+                                      className="text-xs text-left text-amber-700 hover:text-amber-900 flex items-center gap-1 w-full"
+                                    >
+                                      <span>•</span> {t(e.nom)}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </PopoverContent>
                         </Popover>
                       </td>

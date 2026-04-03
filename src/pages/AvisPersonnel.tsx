@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Star, Camera, CheckCircle, Send, Gift, Plus, X, MapPin, Calendar } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLang } from "@/context/LangContext";
 
 const mockReservations = [
-  { id: 1, nomLog: "Hôtel El Mouradi Hammamet", periode: "3 nuits", dateDebut: "05/04/2026", dateFin: "08/04/2026", avisEnvoye: true, lieu: "Hammamet, Nabeul" },
-  { id: 2, nomLog: "Résidence Marina Yasmine", periode: "5 nuits", dateDebut: "12/04/2026", dateFin: "17/04/2026", avisEnvoye: false, lieu: "Hammamet, Nabeul" },
-  { id: 3, nomLog: "Dar El Jeld", periode: "2 nuits", dateDebut: "19/04/2026", dateFin: "21/04/2026", avisEnvoye: false, lieu: "Tunis, Tunisia" },
+  { id: 1, nomLog: "Hôtel El Mouradi Hammamet", periode: "3 nuits", dateDebut: "05/04/2026", dateFin: "08/04/2026", avisEnvoye: true, lieu: "Hammamet, Nabeul", evenements: ["Festival de Carthage", "Festival de Hammamet"], attractions: ["Stade Olympique de Radès", "Parc du Belvédère"] },
+  { id: 2, nomLog: "Résidence Marina Yasmine", periode: "5 nuits", dateDebut: "12/04/2026", dateFin: "17/04/2026", avisEnvoye: false, lieu: "Hammamet, Nabeul", evenements: ["Festival de Carthage", "Football"], attractions: ["Stade Olympique de Radès", "Foire Internationale de Tunis"] },
+  { id: 3, nomLog: "Dar El Jeld", periode: "2 nuits", dateDebut: "19/04/2026", dateFin: "21/04/2026", avisEnvoye: false, lieu: "Tunis, Tunisia", evenements: ["Festival de Carthage", "Journées Cinématographiques"], attractions: ["Parc du Belvédère", "Centre commercial Tunisia Mall"] },
 ];
 
 const mockEvenements = [
@@ -77,6 +77,8 @@ const AvisPersonnel = () => {
   const [derangeDetail, setDerangeDetail] = useState("");
   const [commentaireLibre, setCommentaireLibre] = useState("");
   const [suggestions, setSuggestions] = useState("");
+  const [selectedEvenementsFromList, setSelectedEvenementsFromList] = useState<string[]>([]);
+  const [selectedAttractionsFromList, setSelectedAttractionsFromList] = useState<string[]>([]);
 
   const isAfterStay = (dateFin: string) => {
     const today = new Date();
@@ -84,9 +86,13 @@ const AvisPersonnel = () => {
     return today > fin;
   };
 
-  const getSelectedReservationData = () => mockReservations.find(r => r.id === selectedReservation);
-  const selectedRes = getSelectedReservationData();
+  const selectedRes = useMemo(() => {
+    return mockReservations.find(r => r.id === selectedReservation);
+  }, [selectedReservation]);
   const canEdit = selectedRes ? !isAfterStay(selectedRes.dateFin) : true;
+
+  const availableEvenements = selectedRes?.evenements || [];
+  const availableAttractions = selectedRes?.attractions || [];
 
   const handleReponse = (id: string, val: string | boolean) => {
     setQuestions(questions.map(q => q.id === id ? { ...q, reponse: val } : q));
@@ -132,7 +138,7 @@ const AvisPersonnel = () => {
     setResultat({ note20, reduction });
     setSubmitted(true);
 
-    const selectedRes = getSelectedReservationData();
+    const currentRes = mockReservations.find(r => r.id === selectedReservation);
     const newReview = {
       id: Date.now(),
       nomComplet: "Vous",
@@ -142,7 +148,7 @@ const AvisPersonnel = () => {
       date: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }),
       photo: null,
       reduction,
-      lieu: selectedRes ? `${selectedRes.nomLog}, ${selectedRes.lieu}` : "",
+      lieu: currentRes ? `${currentRes.nomLog}, ${currentRes.lieu}` : "",
       typeLogement: "Hôtel",
     };
 
@@ -163,6 +169,8 @@ const AvisPersonnel = () => {
     setLocalisationDetail("");
     setIncidentDetail("");
     setDerangeDetail("");
+    setSelectedEvenementsFromList([]);
+    setSelectedAttractionsFromList([]);
   };
 
   const allAnswered = questions.every(q => {
@@ -411,38 +419,71 @@ const AvisPersonnel = () => {
                   <span className="text-primary">🔹</span> {t("Événements")}
                 </h4>
                 <div className="space-y-4">
-                  <div>
-                    <span className="text-sm font-medium block mb-2">{t("Avez-vous assisté à des événements durant votre séjour")}</span>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => handleReponse("evenements", true)}
-                        disabled={!canEdit}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          questions.find(q => q.id === "evenements")?.reponse === true
-                            ? "bg-green-600 text-white"
-                            : canEdit
-                              ? "bg-muted text-foreground hover:bg-green-100 border border-border"
-                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                        }`}
-                      >
-                        {t("Oui")}
-                      </button>
-                      <button
-                        onClick={() => handleReponse("evenements", false)}
-                        disabled={!canEdit}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          questions.find(q => q.id === "evenements")?.reponse === false
-                            ? "bg-red-600 text-white"
-                            : canEdit
-                              ? "bg-muted text-foreground hover:bg-red-100 border border-border"
-                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                        }`}
-                      >
-                        {t("Non")}
-                      </button>
+                  {availableEvenements.length > 0 && (
+                    <div>
+                      <span className="text-sm font-medium block mb-2">{t("Sélectionnez les événements auxquels vous avez assisté")}</span>
+                      <div className="flex flex-wrap gap-2">
+                        {availableEvenements.map((event) => (
+                          <button
+                            key={event}
+                            onClick={() => {
+                              setSelectedEvenementsFromList(prev => 
+                                prev.includes(event) 
+                                  ? prev.filter(e => e !== event)
+                                  : [...prev, event]
+                              );
+                              handleReponse("evenements", true);
+                            }}
+                            disabled={!canEdit}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              selectedEvenementsFromList.includes(event)
+                                ? "bg-green-600 text-white"
+                                : canEdit
+                                  ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                            }`}
+                          >
+                            {selectedEvenementsFromList.includes(event) && "✓ "}
+                            {t(event)}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  {questions.find(q => q.id === "evenements")?.reponse === true && (
+                  )}
+                  {availableEvenements.length === 0 && (
+                    <div>
+                      <span className="text-sm font-medium block mb-2">{t("Avez-vous assisté à des événements durant votre séjour")}</span>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleReponse("evenements", true)}
+                          disabled={!canEdit}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            questions.find(q => q.id === "evenements")?.reponse === true
+                              ? "bg-green-600 text-white"
+                              : canEdit
+                                ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {t("Oui")}
+                        </button>
+                        <button
+                          onClick={() => handleReponse("evenements", false)}
+                          disabled={!canEdit}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            questions.find(q => q.id === "evenements")?.reponse === false
+                              ? "bg-red-600 text-white"
+                              : canEdit
+                                ? "bg-muted text-foreground hover:bg-red-100 border border-border"
+                                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {t("Non")}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {(questions.find(q => q.id === "evenements")?.reponse === true || selectedEvenementsFromList.length > 0) && (
                     <div className="p-4 rounded-lg bg-muted/50">
                       <label className="text-sm font-medium block mb-2">{t("Comment évaluez-vous la qualité des événements")}</label>
                       <div className="flex flex-wrap gap-2">
@@ -474,38 +515,71 @@ const AvisPersonnel = () => {
                   <span className="text-primary">🔹</span> {t("Attractions")}
                 </h4>
                 <div className="space-y-4">
-                  <div>
-                    <span className="text-sm font-medium block mb-2">{t("Avez-vous visité des attractions durant votre séjour")}</span>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => handleReponse("attractions", true)}
-                        disabled={!canEdit}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          questions.find(q => q.id === "attractions")?.reponse === true
-                            ? "bg-green-600 text-white"
-                            : canEdit
-                              ? "bg-muted text-foreground hover:bg-green-100 border border-border"
-                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                        }`}
-                      >
-                        {t("Oui")}
-                      </button>
-                      <button
-                        onClick={() => handleReponse("attractions", false)}
-                        disabled={!canEdit}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          questions.find(q => q.id === "attractions")?.reponse === false
-                            ? "bg-red-600 text-white"
-                            : canEdit
-                              ? "bg-muted text-foreground hover:bg-red-100 border border-border"
-                              : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                        }`}
-                      >
-                        {t("Non")}
-                      </button>
+                  {availableAttractions.length > 0 && (
+                    <div>
+                      <span className="text-sm font-medium block mb-2">{t("Sélectionnez les attractions que vous avez visitées")}</span>
+                      <div className="flex flex-wrap gap-2">
+                        {availableAttractions.map((attr) => (
+                          <button
+                            key={attr}
+                            onClick={() => {
+                              setSelectedAttractionsFromList(prev => 
+                                prev.includes(attr) 
+                                  ? prev.filter(a => a !== attr)
+                                  : [...prev, attr]
+                              );
+                              handleReponse("attractions", true);
+                            }}
+                            disabled={!canEdit}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              selectedAttractionsFromList.includes(attr)
+                                ? "bg-green-600 text-white"
+                                : canEdit
+                                  ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                            }`}
+                          >
+                            {selectedAttractionsFromList.includes(attr) && "✓ "}
+                            {t(attr)}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  {questions.find(q => q.id === "attractions")?.reponse === true && (
+                  )}
+                  {availableAttractions.length === 0 && (
+                    <div>
+                      <span className="text-sm font-medium block mb-2">{t("Avez-vous visité des attractions durant votre séjour")}</span>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleReponse("attractions", true)}
+                          disabled={!canEdit}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            questions.find(q => q.id === "attractions")?.reponse === true
+                              ? "bg-green-600 text-white"
+                              : canEdit
+                                ? "bg-muted text-foreground hover:bg-green-100 border border-border"
+                                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {t("Oui")}
+                        </button>
+                        <button
+                          onClick={() => handleReponse("attractions", false)}
+                          disabled={!canEdit}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            questions.find(q => q.id === "attractions")?.reponse === false
+                              ? "bg-red-600 text-white"
+                              : canEdit
+                                ? "bg-muted text-foreground hover:bg-red-100 border border-border"
+                                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {t("Non")}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {(questions.find(q => q.id === "attractions")?.reponse === true || selectedAttractionsFromList.length > 0) && (
                     <div className="p-4 rounded-lg bg-muted/50">
                       <label className="text-sm font-medium block mb-2">{t("Comment évaluez-vous la qualité des attractions")}</label>
                       <div className="flex flex-wrap gap-2">
